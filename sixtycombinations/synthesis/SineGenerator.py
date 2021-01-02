@@ -1,0 +1,2 @@
+class SineGenerator(object):
+    pass

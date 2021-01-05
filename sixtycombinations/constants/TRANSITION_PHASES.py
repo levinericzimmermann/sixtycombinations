@@ -2,6 +2,7 @@
 """
 
 from sixtycombinations.constants import HARMONIES_IN_CORRECT_REGISTER
+from sixtycombinations.constants import TRANSITION_PHASES_FACTOR
 
 
 def detect_how_many_phases_of_fundamental_during_transition(
@@ -17,7 +18,7 @@ def detect_how_many_phases_of_fundamental_during_transition(
     assert common_pitch
 
     nth_partials = [
-        int((pitch - pitches[0]).ratio)
+        int((pitch - pitches[0]).ratio) * TRANSITION_PHASES_FACTOR
         for pitch, pitches in zip(common_pitch, (pitches0, pitches1))
     ]
 

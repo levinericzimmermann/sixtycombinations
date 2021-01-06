@@ -2,6 +2,7 @@
 """
 
 from sixtycombinations.constants import HARMONIES_IN_CORRECT_REGISTER
+from sixtycombinations.constants import TRANSITION_PHASES_EXPONENT
 from sixtycombinations.constants import TRANSITION_PHASES_FACTOR
 
 
@@ -17,11 +18,18 @@ def detect_how_many_phases_of_fundamental_during_transition(
 
     assert common_pitch
 
-    nth_partials = [
-        int((pitch - pitches[0]).ratio) * TRANSITION_PHASES_FACTOR
+    prime0, prime1 = (
+        int((pitch - pitches[0]).ratio)
         for pitch, pitches in zip(common_pitch, (pitches0, pitches1))
-    ]
+    )
 
+    product = (prime0 ** TRANSITION_PHASES_EXPONENT) * (
+        prime1 ** TRANSITION_PHASES_EXPONENT
+    ) * TRANSITION_PHASES_FACTOR
+
+    nth_partials = [product / prime1, product / prime0]
+
+    # compensate octave differences
     try:
         n_octaves_difference = (common_pitch[0] - common_pitch[1]).exponents[0]
     except IndexError:

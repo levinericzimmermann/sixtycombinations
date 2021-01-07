@@ -10,6 +10,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     setup_requires=[],
     tests_require=["nose"],
-    install_requires=["pyo>=1.0.3", "mutwo>=0.0.01", "ortools>=8.1.8487"],
+    install_requires=["pyo>=1.0.3", "mutwo>=0.0.01", "ortools>=8.1.8487", "quicktions"],
     python_requires=">=3.7",
 )

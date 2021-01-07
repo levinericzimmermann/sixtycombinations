@@ -22,6 +22,7 @@ class Group(object):
         attack: int,
         release: int,
         sustain: int = None,
+        relative_start_time: float = None,
     ):
         self.cycle_index = cycle_index
         self.harmony_index = harmony_index
@@ -30,6 +31,7 @@ class Group(object):
         self.attack = int(attack)
         self.release = int(release)
         self.sustain = sustain
+        self.relative_start_time = relative_start_time
 
     def __repr__(self) -> str:
         return "Group({}, {})".format(self.cycle_index, self.harmony_index)
@@ -293,3 +295,15 @@ GROUPS = tuple(
 
 # figure out sustain value of Groups via constraint programming
 [group._assign_sustain_for_itself_and_higher_groups() for group in GROUPS[0]]
+
+
+# declare relative start time of each harmony in each group in seconds
+# (relative insofar as the numbers assume that each start time
+# of each cycle is 0, while it actually differs, see ABSOLUTE_START_TIME_PER_GROUP)
+for cycle in GROUPS:
+    relative_start_time = 0
+    for group in cycle:
+        group.relative_start_time = relative_start_time
+        relative_start_time += (group.attack + group.sustain) * (
+            1 / group.fundamental.frequency
+        )

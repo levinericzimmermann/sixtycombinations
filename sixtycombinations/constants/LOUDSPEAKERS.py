@@ -2,7 +2,7 @@
 
 import expenvelope
 
-from .Loudspeaker import Loudspeaker
+from sixtycombinations.classes import Loudspeaker
 
 LOUDSPEAKERS = {
     loudspeaker.name: loudspeaker

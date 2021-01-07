@@ -1,0 +1,1 @@
+from .PartialsToVibrationsConverter import PartialsToVibrationsConverter

@@ -79,8 +79,6 @@ class Group(object):
                     common_pitch = (pitch0, pitch1)
                     break
 
-        return common_pitch
-
         prime0, prime1 = (
             int((pitch - pitches[0]).ratio)
             for pitch, pitches in zip(common_pitch, (pitches0, pitches1))

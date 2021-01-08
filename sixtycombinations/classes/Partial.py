@@ -1,6 +1,8 @@
 from mutwo.events import basic
 from mutwo.parameters import pitches
 
+from sixtycombinations.classes import Loudspeaker
+
 
 class Partial(basic.SimpleEvent):
     def __init__(
@@ -12,6 +14,7 @@ class Partial(basic.SimpleEvent):
         nth_partial: int,
         is_connection_pitch_to_previous_harmony: bool,
         is_connection_pitch_to_next_harmony: bool,
+        loudspeaker: Loudspeaker,
     ):
         duration = sum((attack, sustain, release)) * (1 / pitch.frequency)
         super().__init__(duration)
@@ -24,6 +27,7 @@ class Partial(basic.SimpleEvent):
             is_connection_pitch_to_previous_harmony
         )
         self.is_connection_pitch_to_next_harmony = is_connection_pitch_to_next_harmony
+        self.loudspeaker = loudspeaker
 
     def __repr__(self):
         return "Partial({})".format(self.nth_partial)

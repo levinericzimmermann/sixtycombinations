@@ -66,6 +66,7 @@ for nth_cycle, cycle in enumerate(GROUPS):
                 nth_partial,
                 is_connection_pitch_to_previous_harmony,
                 is_connection_pitch_to_next_harmony,
+                RING_POSITION_TO_LOUDSPEAKER[nth_cycle][nth_loudspeaker]
             )
 
             # add partial

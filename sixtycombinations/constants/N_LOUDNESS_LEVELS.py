@@ -1,2 +1,2 @@
-# between how many loudness level you want to differentiate
+# between how many loudness shall we differentiate
 N_LOUDNESS_LEVELS = 25

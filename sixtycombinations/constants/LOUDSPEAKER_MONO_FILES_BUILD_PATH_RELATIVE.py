@@ -1,0 +1,5 @@
+from sixtycombinations.constants import LOUDSPEAKER_MONO_FILES_BUILD_PATH
+
+LOUDSPEAKER_MONO_FILES_BUILD_PATH_RELATIVE = "{}/relative".format(
+    LOUDSPEAKER_MONO_FILES_BUILD_PATH
+)

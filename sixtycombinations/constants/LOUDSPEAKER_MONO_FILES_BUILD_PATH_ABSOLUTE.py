@@ -1,0 +1,5 @@
+from sixtycombinations.constants import LOUDSPEAKER_MONO_FILES_BUILD_PATH
+
+LOUDSPEAKER_MONO_FILES_BUILD_PATH_ABSOLUTE = "{}/absolute".format(
+    LOUDSPEAKER_MONO_FILES_BUILD_PATH
+)

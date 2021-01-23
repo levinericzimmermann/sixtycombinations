@@ -31,13 +31,15 @@ class Tendency(object):
 
         # make sure both curves have equal duration
         try:
-            assert minima_curve.end_time == maxima_curve.end_time
+            assert minima_curve.end_time() == maxima_curve.end_time()
         except AssertionError:
             message = (
-                "Found unequal duration when comparing 'minima_curve' and"
-                " 'maxima_curve'."
+                "Found unequal duration when comparing 'minima_curve' (with end_time ="
+                " '{}') and 'maxima_curve' (with end_time = '{}').".format(
+                    minima_curve.end_time(), maxima_curve.end_time()
+                )
             )
-            message += " Make sure both curves should have equal duration."
+            message += " Make sure both curves have equal duration."
             raise ValueError(message)
 
         # compare all local extrema to make sure that at any time
@@ -45,7 +47,7 @@ class Tendency(object):
         points_to_compare = (
             minima_curve.local_extrema(include_saddle_points=True)
             + maxima_curve.local_extrema(include_saddle_points=True)
-            + [0, minima_curve.end_time]
+            + [0, minima_curve.end_time()]
         )
         for time in points_to_compare:
             try:

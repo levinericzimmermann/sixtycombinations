@@ -17,7 +17,9 @@ class Partial(basic.SimpleEvent):
         loudspeaker: Loudspeaker,
     ):
         duration = sum((attack, sustain, release)) * (1 / pitch.frequency)
+
         super().__init__(duration)
+
         self.pitch = pitch
         self.attack = attack
         self.sustain = sustain

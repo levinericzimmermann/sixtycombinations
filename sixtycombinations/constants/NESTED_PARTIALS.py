@@ -1,9 +1,20 @@
 """Nested structure of partials.
 
--> cycles
-    -> speakers
-        -> a/b
+The structure is nested in:
+
+    -> cycles
+        -> speakers
+            -> a/b
+
+Where
+    - 'cycles' represent the three different cycles of groups
+    - 'speakers' represent the specific loudspeakers within one group
+    - 'a/b' represent two simultaneous events that are played from the
+      same speaker. This is necessary because during transitions between
+      two groups one speaker plays two sine waves simultaneously
+
 """
+
 from mutwo.events import basic
 
 from sixtycombinations.classes import Partial

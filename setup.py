@@ -16,6 +16,7 @@ setuptools.setup(
         "ortools>=8.1.8487",
         "quicktions",
         "sox",
+        "mu",
     ],
     python_requires=">=3.7",
 )

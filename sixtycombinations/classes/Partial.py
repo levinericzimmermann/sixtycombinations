@@ -1,3 +1,5 @@
+import typing
+
 from mutwo.events import basic
 from mutwo.parameters import pitches
 
@@ -15,6 +17,7 @@ class Partial(basic.SimpleEvent):
         is_connection_pitch_to_previous_harmony: bool,
         is_connection_pitch_to_next_harmony: bool,
         loudspeaker: Loudspeaker,
+        rhythmical_data_per_state: typing.Tuple[typing.Tuple[typing.Any]],
     ):
         duration = sum((attack, sustain, release)) * (1 / pitch.frequency)
 
@@ -30,6 +33,7 @@ class Partial(basic.SimpleEvent):
         )
         self.is_connection_pitch_to_next_harmony = is_connection_pitch_to_next_harmony
         self.loudspeaker = loudspeaker
+        self.rhythmical_data_per_state = rhythmical_data_per_state
 
     def __repr__(self):
         return "Partial({})".format(self.nth_partial)

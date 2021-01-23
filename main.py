@@ -12,7 +12,7 @@ import sixtycombinations
 
 def _convert_partials_to_vibrations() -> basic.SimultaneousEvent:
     partials_to_vibrations_converter = (
-        sixtycombinations.converters.mutwo.PartialsToVibrationsConverter()
+        sixtycombinations.converters.symmetrical.PartialsToVibrationsConverter()
     )
     return basic.SimultaneousEvent(
         # cycles
@@ -36,10 +36,12 @@ def _convert_partials_to_vibrations() -> basic.SimultaneousEvent:
 
 
 def _render_partials_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
-    csound_score_converter = converters.csound.CsoundScoreConverter(
+    csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
         "sixtycombinations/synthesis/SineGenerator.sco",
         p4=lambda vibration: vibration.pitch.frequency,
         p5=lambda vibration: vibration.amplitude,
+        p6=lambda vibration: vibration.attack_duration,
+        p7=lambda vibration: vibration.release_duration,
     )
     for nth_cycle, cycle in enumerate(nested_vibrations):
         for nth_speaker, speaker_data in enumerate(cycle):
@@ -48,7 +50,7 @@ def _render_partials_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
                 nth_cycle,
                 nth_speaker,
             )
-            csound_converter = converters.csound.CsoundConverter(
+            csound_converter = converters.frontends.csound.CsoundConverter(
                 path,
                 "sixtycombinations/synthesis/SineGenerator.orc",
                 csound_score_converter,
@@ -60,7 +62,7 @@ def _render_partials_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
 
 
 def _cut_sound_files(nested_vibrations: basic.SimultaneousEvent):
-    csound_score_converter = converters.csound.CsoundScoreConverter(
+    csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
         "sixtycombinations/synthesis/Remix.sco",
         p4=lambda sample_player: sample_player.start,
         p5=lambda sample_player: '"{}"'.format(sample_player.path),
@@ -107,7 +109,7 @@ def _cut_sound_files(nested_vibrations: basic.SimultaneousEvent):
                 ]
             )
 
-            csound_converter = converters.csound.CsoundConverter(
+            csound_converter = converters.frontends.csound.CsoundConverter(
                 absolute_sample_path,
                 "sixtycombinations/synthesis/Remix.orc",
                 csound_score_converter,
@@ -120,12 +122,12 @@ def _cut_sound_files(nested_vibrations: basic.SimultaneousEvent):
 
 def _mix_sound_files(n_channels: int):
     if n_channels == 2:
-        csound_score_converter = converters.csound.CsoundScoreConverter(
+        csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
             "sixtycombinations/synthesis/StereoMixdown.sco",
             p4=lambda stereo_sample_player: '"{}"'.format(stereo_sample_player.path),
             p5=lambda stereo_sample_player: stereo_sample_player.panning,
         )
-        csound_converter = converters.csound.CsoundConverter(
+        csound_converter = converters.frontends.csound.CsoundConverter(
             "{}/stereo.wav".format(sixtycombinations.constants.MIX_PATH),
             "sixtycombinations/synthesis/StereoMixdown.orc",
             csound_score_converter,

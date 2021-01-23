@@ -14,7 +14,7 @@ ConvertableEvent = basic.SequentialEvent[classes.Partial]
 random.seed(sc_constants.RANDOM_SEED)
 
 
-class PartialsToVibrationsConverter(converters.abc.MutwoEventConverter):
+class PartialsToVibrationsConverter(converters.abc.Converter):
     @staticmethod
     def make_vibration(
         partial: classes.Partial, loudness_level: int, n_phases: int

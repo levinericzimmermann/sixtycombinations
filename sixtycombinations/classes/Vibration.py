@@ -14,6 +14,14 @@ class Vibration(basic.SimpleEvent):
         super().__init__(duration)
         self.pitch = pitch
         self.amplitude = amplitude
+
+        # make sure summed envelope values aren't longer than complete duration
+        while attack_duration + release_duration > duration:
+            if attack_duration > 0:
+                attack_duration *= 0.99
+            if release_duration > 0:
+                release_duration *= 0.99
+
         self.attack_duration = attack_duration
         self.release_duration = release_duration
 

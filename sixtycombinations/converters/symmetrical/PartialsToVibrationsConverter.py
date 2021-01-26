@@ -1,13 +1,17 @@
 import math
-import numpy as np
+import numbers
+
+# import numpy as np
 import random
+import typing
 
 from mutwo import converters
 from mutwo.events import basic
 from mutwo.parameters import pitches
+from mutwo.utilities import tools
 
 from sixtycombinations import classes
-from sixtycombinations import constants as sc_constants  # sixtycombinations_c
+from sixtycombinations import constants as sc_constants
 
 ConvertableEvent = basic.SequentialEvent[classes.Partial]
 
@@ -15,15 +19,98 @@ random.seed(sc_constants.RANDOM_SEED)
 
 
 class PartialsToVibrationsConverter(converters.abc.Converter):
+
+    # ######################################################## #
+    #           calculation of loudness / amplitude            #
+    # ######################################################## #
+
     @staticmethod
-    def make_vibration(
-        partial: classes.Partial, loudness_level: int, n_phases: int
-    ) -> classes.Vibration:
+    def _find_loudness_range_depending_on_spectrality(
+        partial: classes.Partial, absolute_position_on_timeline: float
+    ) -> typing.Tuple[float]:
+        current_spectrality = sc_constants.SPECTRALITY.value_at(
+            absolute_position_on_timeline
+        )
+        loudness_range = sc_constants.LOUDNESS_TENDENCY.range_at(
+            absolute_position_on_timeline
+        )
+        equal_range_distribution = classes.EqualRangeDistribution(
+            *loudness_range,
+            len(sc_constants.RING_POSITION_TO_LOUDSPEAKER[partial.nth_cycle])
+        )
+        return tuple(reversed(equal_range_distribution(current_spectrality)))[
+            partial.nth_active_partial
+        ]
+
+    @staticmethod
+    def _find_loudness_level_for_dynamic_level(
+        loudness_range: typing.Tuple[float], nth_vibration: float, dynamic_curve: int
+    ) -> float:
+        if dynamic_curve == -1:
+            nth_vibration = abs(nth_vibration - 1)
+        area = loudness_range[1] - loudness_range[0]
+        return loudness_range[0] + (area * nth_vibration)
+
+    @staticmethod
+    def _loudness_percentage_to_loudness_level(loudness_percentage: float) -> int:
+        return int((sc_constants.N_LOUDNESS_LEVELS - 1) * loudness_percentage)
+
+    @staticmethod
+    def _find_loudness_level_of_vibration(
+        partial: classes.Partial,
+        absolute_position_on_timeline: float,
+        nth_vibration: float,
+        dynamic_curve: int,  # -1, 0, 1
+    ) -> int:
+        loudness_range = PartialsToVibrationsConverter._find_loudness_range_depending_on_spectrality(
+            partial, absolute_position_on_timeline
+        )
+
+        if dynamic_curve != 0:
+            loudness_percentage = PartialsToVibrationsConverter._find_loudness_level_for_dynamic_level(
+                loudness_range, nth_vibration, dynamic_curve
+            )
+        else:
+            loudness_percentage = random.uniform(*loudness_range)
+            # loudness_percentage = loudness_range[1]
+
+        return PartialsToVibrationsConverter._loudness_percentage_to_loudness_level(
+            loudness_percentage
+        )
+
+    @staticmethod
+    def _find_amplitude_of_vibration(
+        partial: classes.Partial,
+        absolute_position_on_timeline: float,
+        nth_vibration: float,
+        dynamic_curve: int,  # -1, 0, 1
+    ) -> float:
+        loudness_level = PartialsToVibrationsConverter._find_loudness_level_of_vibration(
+            partial, absolute_position_on_timeline, nth_vibration, dynamic_curve
+        )
         amplitude = sc_constants.LOUDNESS_CONVERTER[partial.loudspeaker.name][
             loudness_level
         ].convert(partial.pitch.frequency)
-        duration = n_phases * (1 / partial.pitch.frequency)
-        return classes.Vibration(partial.pitch, duration, amplitude)
+        return amplitude
+
+    # ######################################################## #
+    #               calculation of time and rhythm             #
+    # ######################################################## #
+
+    @staticmethod
+    def _find_absolute_position_on_timeline(
+        nth_cycle: int, absolute_time: numbers.Number
+    ) -> float:
+        """Return value between 0 to 1 where 0 is the absolute start.
+
+        Helper method to identify the position of an event (to gain
+        knowledge about the current values of different global Tendency and
+        Envelope objects).
+        """
+
+        absolute_time += sc_constants.ABSOLUTE_START_TIME_PER_GROUP[nth_cycle]
+        absolute_time %= sc_constants.DURATION
+        return absolute_time / sc_constants.DURATION
 
     @staticmethod
     def _how_many_phases_for_minimal_duration(
@@ -31,80 +118,14 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
     ) -> int:
         duration_of_one_phase = 1 / pitch.frequency
         return math.ceil(
-            sc_constants.MINIMAL_DURATION_OF_ONE_SOUND / duration_of_one_phase
+            sc_constants.MINIMAL_DURATION_OF_ONE_SOUND.value_at(0)
+            / duration_of_one_phase
         )
 
     @staticmethod
-    def _make_rising_vibrations(
-        partial: classes.Partial, n_phases: int
-    ) -> basic.SequentialEvent[classes.Vibration]:
-        # (1) finde heraus wie viele phasen du mindestens zusammen haben
-        #     musst um die erwartete mindestdauer zu erfuellen.
-        # (2) finde heraus wie viele von diesen mindestdauer-phasen du hast
-        #     (und mache wahrscheinlich eine, die eine phase oder so mehr hat)
-        # (3) gehe jede von diesen mindestdauer-objekten durch und frage ob sie
-        #     klingen oder nicht, abhaengig von der gegenwaertigen wahrscheinlichkeit.
-        #     die wahrscheinlichkeit faengt mit der niedrigsten ACTIVITY_LEVELS_RANGE[0]
-        #     an und endet mit ACTIVITY_LEVELS_RANGE[1].
-        # (4) gehe am ende jede von diesen Mindestdauer-Objekten durch und gebe denen
-        #     jeweils eine steigende Lautheit von Minima zu Maxima
-        # (5) wenn der ton ein connection_tone zur benachbarten harmonie ist, fange
-        #     bei der wahrscheinlichkeit von der mitte zwischen maxima und minima und
-        #     und fange auch bei der lautheit bei der mitte an.
-        duration_of_one_phase = 1 / partial.pitch.frequency
-        n_phases_for_minimal_duration = PartialsToVibrationsConverter._how_many_phases_for_minimal_duration(
-            partial.pitch
-        )
-        n_minimal_duration_packages = int(n_phases // n_phases_for_minimal_duration)
-        n_remaining_phases = n_phases % n_phases_for_minimal_duration
-        n_phases_per_vibration = [
-            n_phases_for_minimal_duration for _ in range(n_minimal_duration_packages)
-        ]
-        if n_phases_per_vibration:
-            n_phases_per_vibration[0] += n_remaining_phases
-        else:
-            n_phases_per_vibration.append(n_remaining_phases)
-        is_package_vibrating = tuple(
-            random.random() < likelihood
-            for likelihood in np.linspace(
-                *sc_constants.ACTIVITY_RANGE, n_minimal_duration_packages, dtype=float
-            )
-        )
-        n_vibrating_packages = len(
-            tuple(filter(lambda is_vibrating: is_vibrating, is_package_vibrating))
-        )
-        loudness_level_per_sounding_package = (
-            int(round(loudness_level))
-            for loudness_level in np.linspace(
-                0, sc_constants.N_LOUDNESS_LEVELS - 1, n_vibrating_packages, dtype=float
-            )
-        )
-        vibrations = basic.SequentialEvent([])
-        for n_phases, is_vibrating in zip(n_phases_per_vibration, is_package_vibrating):
-            if is_vibrating:
-                loudness_level = next(loudness_level_per_sounding_package)
-                vibrations.append(
-                    PartialsToVibrationsConverter.make_vibration(
-                        partial, loudness_level, n_phases
-                    )
-                )
-            else:
-                duration = duration_of_one_phase * n_phases
-                vibrations.append(basic.SimpleEvent(duration))
-        return vibrations
-
-    @staticmethod
-    def _make_steady_vibrations(
-        partial: classes.Partial, n_phases: int
-    ) -> basic.SequentialEvent[classes.Vibration]:
-        # (1) finde heraus wie viele phasen du mindestens zusammen haben
-        #     musst um die erwartete mindestdauer zu erfuellen.
-        # (2) finde heraus wie viele von diesen mindestdauer-phasen du hast
-        #     (und mache wahrscheinlich eine, die eine phase oder so mehr hat)
-        # (3) gehe einfach jeder von den mindestdauer phasen durch mit max vol
-        #     und max activity (ganz einfach fuer ersten versuch, kann danach
-        #     noch verbessert werden)
-        duration_of_one_phase = 1 / partial.pitch.frequency
+    def _find_rhythm_of_vibrations(
+        partial: classes.Partial, n_phases: int, absolute_time: float,
+    ) -> basic.SequentialEvent[basic.SimpleEvent]:
         n_phases_for_minimal_duration = PartialsToVibrationsConverter._how_many_phases_for_minimal_duration(
             partial.pitch
         )
@@ -113,62 +134,140 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         n_phases_per_vibration = [
             n_phases_for_minimal_duration for _ in range(n_minimal_duration_packages)
         ]
-        n_phases_per_vibration[0] += n_remaining_phases
-        remaining_vibration_parts = n_phases - sum(n_phases_per_vibration)
-        is_remaining_vibration_parts_already_used = False
-        is_package_vibrating = tuple(
+
+        if n_phases_per_vibration:
+            n_phases_per_vibration[0] += n_remaining_phases
+        else:
+            n_phases_per_vibration.append(n_remaining_phases)
+
+        is_package_vibrating = [
             random.random() < sc_constants.ACTIVITY_RANGE[-1]
             for _ in range(n_minimal_duration_packages)
-        )
-        vibrations = basic.SequentialEvent([])
+        ]
+
+        remaining_vibration_parts = n_phases - sum(n_phases_per_vibration)
+        if remaining_vibration_parts > 0:
+            n_phases_per_vibration.append(remaining_vibration_parts)
+            is_package_vibrating.append(False)
+
+        rhythm = basic.SequentialEvent([])
+        n_vibrations = 0
         for n_phases, is_vibrating in zip(n_phases_per_vibration, is_package_vibrating):
-            if is_vibrating:
+            if rhythm and rhythm[-1].is_vibrating == is_vibrating:
+                rhythm[-1].duration += n_phases
+            else:
+                se = basic.SimpleEvent(n_phases)
+                se.is_vibrating = is_vibrating
+                rhythm.append(se)
+                if is_vibrating:
+                    n_vibrations += 1
+
+        return rhythm, n_vibrations
+
+    # ######################################################## #
+    #               generation of vibrations                   #
+    # ######################################################## #
+
+    @staticmethod
+    def make_vibration(
+        partial: classes.Partial,
+        n_phases: int,
+        absolute_position_on_timeline: float,
+        nth_vibration: float,
+        dynamic_curve: int,  # -1, 0, 1
+    ) -> classes.Vibration:
+        """Generate vibration from partial data.
+
+        :param n_phases: integer how many phases of the partial shall be played.
+        :param absolute_position_on_timeline: number between 0 and 1 that indicate
+            the absolute position on the timeline of the complete composition
+        :param nth_vibration: number between 0 and 1 that indicate the position
+            of the vibration in the current partial.
+        :param is_rising: whether the loudness curve shall rise (cresc.) of if it
+            should be static
+        """
+        amplitude = PartialsToVibrationsConverter._find_amplitude_of_vibration(
+            partial, absolute_position_on_timeline, nth_vibration, dynamic_curve
+        )
+        duration = n_phases * partial.period_duration
+        return classes.Vibration(partial.pitch, duration, amplitude)
+
+    @staticmethod
+    def _make_vibrations(
+        partial: classes.Partial,
+        n_phases: int,
+        absolute_time: float,
+        dynamic_curve: int,
+    ) -> basic.SequentialEvent[classes.Vibration]:
+        duration_of_one_phase = partial.period_duration
+        rhythm, n_vibrations = PartialsToVibrationsConverter._find_rhythm_of_vibrations(
+            partial, n_phases, absolute_time
+        )
+        nth_vibration = 0
+        vibrations = basic.SequentialEvent([])
+        for absolute_phases, part in zip(rhythm.absolute_times, rhythm):
+            relative_absolute_time = absolute_time + (
+                absolute_phases * duration_of_one_phase
+            )
+            absolute_position_on_timeline = PartialsToVibrationsConverter._find_absolute_position_on_timeline(
+                partial.nth_cycle, relative_absolute_time
+            )
+            if part.is_vibrating:
                 vibrations.append(
                     PartialsToVibrationsConverter.make_vibration(
-                        partial, sc_constants.N_LOUDNESS_LEVELS - 1, n_phases
+                        partial,
+                        part.duration,
+                        absolute_position_on_timeline,
+                        nth_vibration / n_vibrations,
+                        dynamic_curve,
                     )
                 )
+                nth_vibration += 1
             else:
-                if not is_remaining_vibration_parts_already_used:
-                    n_phases += remaining_vibration_parts
-                    is_remaining_vibration_parts_already_used = True
-
-                duration = duration_of_one_phase * n_phases
+                duration = duration_of_one_phase * part.duration
                 vibrations.append(basic.SimpleEvent(duration))
-
-        if not is_remaining_vibration_parts_already_used:
-            duration = duration_of_one_phase * remaining_vibration_parts
-            vibrations.append(basic.SimpleEvent(duration))
 
         return vibrations
 
     def _convert_partial_to_vibrations(
-        self, partial: classes.Partial,
+        self, absolute_time: float, partial: classes.Partial,
     ) -> basic.SequentialEvent[classes.Vibration]:
         vibrations = basic.SequentialEvent([])
 
-        # (1) make attack
-        vibrations.extend(self._make_rising_vibrations(partial, partial.attack))
-        # (2) make sustain
-        vibrations.extend(self._make_steady_vibrations(partial, partial.sustain))
-        # (3) make release (inverse attack)
-        vibrations.extend(
-            reversed(self._make_rising_vibrations(partial, partial.release))
-        )
+        n_phases_per_part = (partial.attack, partial.sustain, partial.release)
+        n_added_phases = tools.accumulate_from_zero(n_phases_per_part)
+
+        for n_phases, n_added_phases, curve_shape in zip(
+            n_phases_per_part, n_added_phases, (1, 0, -1)
+        ):
+            relative_absolute_time = absolute_time + (
+                n_added_phases * partial.period_duration
+            )
+            vibrations.extend(
+                self._make_vibrations(
+                    partial, n_phases, relative_absolute_time, curve_shape
+                )
+            )
 
         return vibrations
+
+    # ######################################################## #
+    #                    public method                         #
+    # ######################################################## #
 
     def convert(
         self, event_to_convert: ConvertableEvent
     ) -> basic.SequentialEvent[classes.Vibration]:
         new_sequential_event = basic.SequentialEvent([])
 
-        for partial in event_to_convert:
+        for absolute_time, partial in zip(
+            event_to_convert.absolute_times, event_to_convert
+        ):
 
             # one partial to many vibrations
             if isinstance(partial, classes.Partial):
                 new_sequential_event.extend(
-                    self._convert_partial_to_vibrations(partial)
+                    self._convert_partial_to_vibrations(absolute_time, partial)
                 )
 
             # rest to rest

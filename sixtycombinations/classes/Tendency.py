@@ -1,11 +1,13 @@
+import typing
+
 import expenvelope
 
 
 class Tendency(object):
-    """Tendency offers an interface for dynamically changing probability fields.
+    """Tendency offers an interface for dynamically changing min/max areas.
 
     The class is based on Gottfried Michael Koenigs algorithm of "Tendenz-Masken" in
-    his program "Projekt 2".
+    his program "Projekt 2" where those min/max areas represent probability fields.
 
     :param minima_curve:
     :param maxima_curve:
@@ -76,3 +78,6 @@ class Tendency(object):
     def maxima_curve(self, maxima_curve: expenvelope.Envelope) -> expenvelope.Envelope:
         self._assert_curves_are_valid(self.minima_curve, maxima_curve)
         self._maxima_curve = maxima_curve
+
+    def range_at(self, time: float) -> typing.Tuple[float]:
+        return (self.minima_curve.value_at(time), self.maxima_curve.value_at(time))

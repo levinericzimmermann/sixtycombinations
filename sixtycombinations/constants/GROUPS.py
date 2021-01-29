@@ -23,6 +23,8 @@ from sixtycombinations.constants import TRANSITION_PHASES
 
 from sixtycombinations.constants import MINIMAL_DURATION_OF_ONE_BEAT
 
+from sixtycombinations.constants import N_ITERATIONS_OF_HARMONIC_STRUCTURE
+
 
 class Group(object):
     def __init__(
@@ -469,6 +471,10 @@ GROUPS = tuple(
 
 # find rhythmical data per group
 [[group._assign_rhythmical_data() for group in groups] for groups in GROUPS]
+
+
+# multiply groups according to N_ITERATIONS_OF_HARMONIC_STRUCTURE variable
+GROUPS = tuple(group * N_ITERATIONS_OF_HARMONIC_STRUCTURE for group in GROUPS)
 
 
 # declare relative start time of each harmony in each group in seconds

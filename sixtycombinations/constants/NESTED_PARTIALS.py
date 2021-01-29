@@ -53,7 +53,7 @@ for nth_cycle, cycle in enumerate(GROUPS):
         common_pitch_data_with_next_harmony = group.common_pitch_data_with_next_harmony
 
         pitch_to_loudspeaker_mapping = PITCH_TO_LOUDSPEAKER_MAPPING[nth_cycle][
-            nth_group
+            nth_group % len(PITCH_TO_LOUDSPEAKER_MAPPING[nth_cycle])
         ]
         a_or_b = nth_group % 2
         for nth_pitch, pitch in enumerate(group.harmony):

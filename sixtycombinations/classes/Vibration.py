@@ -8,8 +8,8 @@ class Vibration(basic.SimpleEvent):
         pitch: pitches.JustIntonationPitch,
         duration: float,
         amplitude: float,
-        attack_duration: float = 0.1,
-        release_duration: float = 0.1,
+        attack_duration: float,
+        release_duration: float,
     ):
         super().__init__(duration)
         self.pitch = pitch
@@ -17,6 +17,10 @@ class Vibration(basic.SimpleEvent):
 
         # make sure summed envelope values aren't longer than complete duration
         while attack_duration + release_duration > duration:
+            if attack_duration > release_duration:
+                attack_duration = release_duration
+            elif release_duration > attack_duration:
+                release_duration = attack_duration
             if attack_duration > 0:
                 attack_duration *= 0.99
             if release_duration > 0:

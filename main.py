@@ -35,30 +35,13 @@ def _convert_partials_to_vibrations() -> basic.SimultaneousEvent:
     )
 
 
-def _render_partials_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
-    csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
-        "sixtycombinations/synthesis/SineGenerator.sco",
-        p4=lambda vibration: vibration.pitch.frequency,
-        p5=lambda vibration: vibration.amplitude,
-        p6=lambda vibration: vibration.attack_duration,
-        p7=lambda vibration: vibration.release_duration,
-    )
+def _render_vibrations_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
     for nth_cycle, cycle in enumerate(nested_vibrations):
         for nth_speaker, speaker_data in enumerate(cycle):
-            path = "{}/{}_{}.wav".format(
-                sixtycombinations.constants.LOUDSPEAKER_MONO_FILES_BUILD_PATH_RELATIVE,
-                nth_cycle,
-                nth_speaker,
+            sound_file_converter = sixtycombinations.converters.frontends.VibrationsToSoundFileConverter(
+                nth_cycle, nth_speaker
             )
-            csound_converter = converters.frontends.csound.CsoundConverter(
-                path,
-                "sixtycombinations/synthesis/SineGenerator.orc",
-                csound_score_converter,
-                "--format=double",  # 64 bit floating point
-            )
-            csound_converter.convert(speaker_data)
-
-    os.remove(csound_score_converter.path)  # remove score file
+            sound_file_converter.convert(speaker_data)
 
 
 def _cut_sound_files(nested_vibrations: basic.SimultaneousEvent):
@@ -166,7 +149,7 @@ if __name__ == "__main__":
     nested_vibrations = _convert_partials_to_vibrations()
 
     # (2) render partials to sound files
-    _render_partials_to_sound_files(nested_vibrations)
+    _render_vibrations_to_sound_files(nested_vibrations)
 
     # (3) adjust (cut) sound files
     _cut_sound_files(nested_vibrations)

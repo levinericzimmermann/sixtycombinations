@@ -11,14 +11,22 @@ class Tendency(object):
 
     :param minima_curve:
     :param maxima_curve:
+    :param random_seed: int
     """
 
     def __init__(
-        self, minima_curve: expenvelope.Envelope, maxima_curve: expenvelope.Envelope
+        self,
+        minima_curve: expenvelope.Envelope,
+        maxima_curve: expenvelope.Envelope,
+        random_seed: int = 100,
     ):
+        import random
+        random.seed(random_seed)
+
         self._assert_curves_are_valid(minima_curve, maxima_curve)
         self._minima_curve = minima_curve
         self._maxima_curve = maxima_curve
+        self._random = random
 
     def __repr__(self) -> str:
         return "{}({}, {})".format(
@@ -81,3 +89,6 @@ class Tendency(object):
 
     def range_at(self, time: float) -> typing.Tuple[float]:
         return (self.minima_curve.value_at(time), self.maxima_curve.value_at(time))
+
+    def value_at(self, time: float) -> float:
+        return self._random.uniform(*self.range_at(time))

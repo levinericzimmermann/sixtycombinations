@@ -596,8 +596,18 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         release_duration = sc_constants.RELEASE_DURATION_TENDENCY.value_at(
             absolute_position_on_timeline
         )
+        instrument = sc_constants.SYNTHESIZER_CURVE.gamble_at(
+            absolute_position_on_timeline
+        )
+        bandwidth = sc_constants.BANDWIDTH.value_at(absolute_position_on_timeline)
         return classes.Vibration(
-            partial.pitch, duration, amplitude, attack_duration, release_duration
+            partial.pitch,
+            duration,
+            amplitude,
+            attack_duration,
+            release_duration,
+            instrument,
+            bandwidth,
         )
 
     def _make_vibrations(

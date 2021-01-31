@@ -6,3 +6,4 @@ from .SamplePlayer import SamplePlayer
 from .StereoSamplePlayer import StereoSamplePlayer
 from .Tendency import Tendency
 from .EqualRangeDistribution import EqualRangeDistribution
+from .DynamicChoice import DynamicChoice

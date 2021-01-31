@@ -15,6 +15,32 @@ class VibrationsToSoundFileConverter(converters.abc.Converter):
         self.nth_cycle = nth_cycle
         self.nth_speaker = nth_speaker
 
+        self.csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
+            "sixtycombinations/synthesis/Orchestra.sco",
+            p1=lambda vibration: vibration.instrument,
+            p4=lambda vibration: vibration.pitch.frequency,
+            p5=lambda vibration: vibration.amplitude,
+            p6=lambda vibration: vibration.attack_duration,
+            p7=lambda vibration: vibration.release_duration,
+            # for instrument 2 (filtered noise) return bandwidth
+            p8=lambda vibration: (None, vibration.bandwidth)[
+                vibration.instrument in (2,)
+            ],
+        )
+
+        self.path = "{}/{}_{}.wav".format(
+            constants.LOUDSPEAKER_MONO_FILES_BUILD_PATH_RELATIVE,
+            self.nth_cycle,
+            self.nth_speaker,
+        )
+
+        self.csound_converter = converters.frontends.csound.CsoundConverter(
+            self.path,
+            "sixtycombinations/synthesis/Orchestra.orc",
+            self.csound_score_converter,
+            "--format=double",  # 64 bit floating point
+        )
+
     # ######################################################## #
     #                    public method                         #
     # ######################################################## #
@@ -23,24 +49,8 @@ class VibrationsToSoundFileConverter(converters.abc.Converter):
         self, event_to_convert: ConvertableEvent
     ) -> basic.SequentialEvent[classes.Vibration]:
 
-        csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
-            "sixtycombinations/synthesis/SineGenerator.sco",
-            p4=lambda vibration: vibration.pitch.frequency,
-            p5=lambda vibration: vibration.amplitude,
-            p6=lambda vibration: vibration.attack_duration,
-            p7=lambda vibration: vibration.release_duration,
-        )
-        path = "{}/{}_{}.wav".format(
-            constants.LOUDSPEAKER_MONO_FILES_BUILD_PATH_RELATIVE,
-            self.nth_cycle,
-            self.nth_speaker,
-        )
-        csound_converter = converters.frontends.csound.CsoundConverter(
-            path,
-            "sixtycombinations/synthesis/SineGenerator.orc",
-            csound_score_converter,
-            "--format=double",  # 64 bit floating point
-        )
-        csound_converter.convert(event_to_convert)
+        # render wav file
+        self.csound_converter.convert(event_to_convert)
 
-        os.remove(csound_score_converter.path)  # remove score file
+        # remove score file
+        os.remove(self.csound_score_converter.path)

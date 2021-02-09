@@ -3,6 +3,6 @@
 import expenvelope
 
 BANDWIDTH = expenvelope.Envelope.from_points(
-    (0, 0.2),
-    (1, 0.2),
+    (0, 0.91),
+    (1, 0.91),
 )

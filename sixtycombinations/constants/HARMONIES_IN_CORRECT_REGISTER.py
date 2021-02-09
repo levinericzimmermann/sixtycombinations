@@ -12,6 +12,7 @@ frequency <= FREQUENCY_RANGE[1].
 """
 
 from mutwo.parameters import pitches
+from mutwo.parameters import pitches_constants
 
 from sixtycombinations.constants import FREQUENCY_RANGE
 from sixtycombinations.constants import HARMONIES
@@ -40,7 +41,7 @@ lowest_pitch_in_first_cycle = min(
     )
 )
 # concert pitch for 1/1
-pitches.constants.DEFAULT_CONCERT_PITCH = float(
+pitches_constants.DEFAULT_CONCERT_PITCH = float(
     FREQUENCY_RANGE[0] / lowest_pitch_in_first_cycle.ratio
 )
 

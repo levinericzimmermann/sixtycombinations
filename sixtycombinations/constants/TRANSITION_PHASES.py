@@ -7,7 +7,7 @@ from sixtycombinations.constants import TRANSITION_PHASES_FACTOR
 
 
 def detect_how_many_phases_of_fundamental_during_transition(
-    pitches0: tuple, pitches1: tuple
+    pitches0: tuple, pitches1: tuple, nth_cycle: int
 ) -> tuple:
     common_pitch = None
     for pitch0 in pitches0:
@@ -25,7 +25,7 @@ def detect_how_many_phases_of_fundamental_during_transition(
 
     product = (prime0 ** TRANSITION_PHASES_EXPONENT) * (
         prime1 ** TRANSITION_PHASES_EXPONENT
-    ) * TRANSITION_PHASES_FACTOR
+    ) * TRANSITION_PHASES_FACTOR[nth_cycle]
 
     nth_partials = [product / prime1, product / prime0]
 
@@ -44,14 +44,14 @@ def detect_how_many_phases_of_fundamental_during_transition(
 
 TRANSITION_PHASES = []
 
-for cycle in HARMONIES_IN_CORRECT_REGISTER:
+for nth_cycle, cycle in enumerate(HARMONIES_IN_CORRECT_REGISTER):
 
     transitions = [[None, None] for _ in cycle]
     for index, pitches0, pitches1 in zip(
         range(len(cycle)), cycle, cycle[1:] + cycle[:1]
     ):
         n_phases0, n_phases1 = detect_how_many_phases_of_fundamental_during_transition(
-            pitches0, pitches1
+            pitches0, pitches1, nth_cycle
         )
         transitions[index][1] = n_phases0
         try:

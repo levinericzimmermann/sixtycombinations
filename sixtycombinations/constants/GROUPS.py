@@ -402,14 +402,14 @@ class Group(object):
         )
 
         # print duration of one bar etc.
-        # print("Group:", self.cycle_index)
-        # for rhythmical_data in self.rhythmical_data_per_state:
-        #     print(
-        #         rhythmical_data[0][1],
-        #         rhythmical_data[0][2].duration,
-        #         rhythmical_data[-1][2][0].duration,
-        #     )
-        # print("")
+        print("Group:", self.cycle_index)
+        for rhythmical_data in self.rhythmical_data_per_state:
+            print(
+                rhythmical_data[0][1],
+                rhythmical_data[0][2].duration * rhythmical_data[0][0],
+                rhythmical_data[-1][2][0].duration,
+            )
+        print("")
 
     def _assign_sustain_for_itself_and_higher_groups(self) -> None:
         # only valid for lowest cycle
@@ -487,3 +487,26 @@ for cycle in GROUPS:
         relative_start_time += (group.attack + group.sustain) * (
             1 / group.fundamental.frequency
         )
+
+
+# print average difference of duration between different groups
+import itertools
+
+for nth_cycle, cycle in enumerate(GROUPS):
+    for state in (0, 1, 2):
+        duration_per_group = tuple(
+            group.rhythmical_data_per_state[state][0][0]
+            * group.rhythmical_data_per_state[state][0][2].duration
+            for group in cycle
+        )
+        duration_difference_pairs = tuple(
+            abs(a - b) for a, b in itertools.combinations(duration_per_group, 2)
+        )
+        avg_dur = sum(duration_per_group) / len(duration_per_group)
+        avg_diff = sum(duration_difference_pairs) / len(duration_difference_pairs)
+        print(
+            "Group {}, state {} AVG dur: {}, AVG diff: {}".format(
+                nth_cycle, state, avg_dur, avg_diff
+            )
+        )
+    print("")

@@ -1,9 +1,10 @@
-; orchestra file containing all different instruments that get used
+; orchestra file containing all different instruments that are used
 
+; setting general details
 sr     = 96000
 ksmps  = 1
 0dbfs  = 1
-nchnls = 1
+nchnls = 1 
 
 ; simple sine oscillator
 instr 1
@@ -14,8 +15,13 @@ instr 1
     iamp = p5
     iattack = p6
     irelease = p7
+    ifreqStart = p8
+    ifreqStop = p9
+    iglissandoDuration0 = p10
+    iglissandoDuration1 = p11
     kenv linseg 0, iattack, 1, idur - (iattack + irelease), 1, irelease, 0
-    asig poscil3 iamp * kenv, ifreq
+    kfreq linseg ifreqStart, iglissandoDuration0, ifreq, idur - (iglissandoDuration0 + iglissandoDuration1), ifreq, iglissandoDuration1, ifreqStop
+    asig poscil3 iamp * kenv, kfreq
     out asig
 endin
 
@@ -26,12 +32,19 @@ instr 2
     iamp = p5
     iattack = p6
     irelease = p7
-    ibandwidth = p8
+    ifreqStart = p8
+    ifreqStop = p9
+    iglissandoDuration0 = p10
+    iglissandoDuration1 = p11
+    ibandwidth = p12
 
-    aSigToAdjust poscil3 iamp, ifreq
+    kfreq linseg ifreqStart, iglissandoDuration0, ifreq, idur - (iglissandoDuration0 + iglissandoDuration1), ifreq, iglissandoDuration1, ifreqStop
+
+    aSigToAdjust poscil3 iamp, kfreq
     aSig noise 1, 0
-    aSigFiltered reson aSig, ifreq, ibandwidth, 1
-    ; aSigFiltered resonr aSig, ifreq, ibandwidth, 1
+    ; aSigFiltered reson aSig, kfreq, ibandwidth, 1
+    ; aSigFiltered butterbp aSig, kfreq, ibandwidth, 1
+    aSigFiltered resonx aSig, kfreq, ibandwidth, 4
     aSigBalanced balance aSigFiltered, aSigToAdjust
 
     kenv linseg 0, iattack, 1, idur - (iattack + irelease), 1, irelease, 0

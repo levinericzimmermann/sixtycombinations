@@ -14,8 +14,8 @@ import expenvelope
 # )
 
 # SPECTRALITY = expenvelope.Envelope.from_points(
-#     (0, 0.5),
-#     (1, 0.5),
+#     (0, 0.7),
+#     (1, 0.7),
 # )
 
 
@@ -32,3 +32,14 @@ def make_repeating_sine(duration: float = 0.025, period=1):
 
 
 SPECTRALITY = expenvelope.Envelope.from_function(make_repeating_sine())
+
+
+
+# fuer filter sweeps:
+# def make_repeating_sine(duration: float = 0.02, period=1):
+#     factor = period / duration
+# 
+#     def repsine(time: float) -> float:
+#         return 0.5 * (math.sin(math.pi * (factor * (time % duration))))
+# 
+#     return repsine

@@ -5,7 +5,7 @@ from mutwo import parameters
 class SamplePlayer(events.basic.SimpleEvent):
     def __init__(
         self,
-        duration: parameters.durations.abc.DurationType,
+        duration: parameters.abc.DurationType,
         start: float,
         path: str,
     ):

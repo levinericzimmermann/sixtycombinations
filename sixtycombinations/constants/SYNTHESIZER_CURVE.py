@@ -10,8 +10,8 @@ SYNTHESIZER_CURVE = classes.DynamicChoice(
     (1, 2),
     (
         # sine
-        expenvelope.Envelope.from_points((0, 0), (1, 0)),
-        # filtered noise
         expenvelope.Envelope.from_points((0, 1), (1, 1)),
+        # filtered noise
+        expenvelope.Envelope.from_points((0, 0.285), (1, 0.285)),
     ),
 )

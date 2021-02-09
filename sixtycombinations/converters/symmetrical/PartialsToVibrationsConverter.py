@@ -10,8 +10,7 @@ import expenvelope
 
 from mutwo import converters
 from mutwo.events import basic
-
-# from mutwo.parameters import pitches
+from mutwo.parameters import pitches
 from mutwo.utilities import tools
 
 from mu.utils import infit
@@ -43,6 +42,19 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         )
         current_factor = math.log(frequency / sc_constants.REAL_FREQUENCY_RANGE[0], 2)
         return current_factor / max_factor
+
+    @staticmethod
+    def _find_linear_position_in_frequency_range(frequency: float) -> float:
+        difference = (
+            sc_constants.REAL_FREQUENCY_RANGE[1] - sc_constants.REAL_FREQUENCY_RANGE[0]
+        )
+        return (frequency - sc_constants.REAL_FREQUENCY_RANGE[0]) / difference
+
+    @staticmethod
+    def _adjust_bandwidth_depending_by_vibration_pitch(
+        bandwidth: float, pitch: pitches.JustIntonationPitch
+    ) -> float:
+        return bandwidth * (2 ** pitch.octave)
 
     @staticmethod
     def _adjust_range_by_dynamic_curve(
@@ -110,7 +122,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         range_adjusted_by_filter = PartialsToVibrationsConverter._adjust_range_by_filter(
             partial, tendency_range, absolute_position_on_timeline
         )
-        range_adjusted_by_spectrality = PartialsToVibrationsConverter._adjust_range_by_filter(
+        range_adjusted_by_spectrality = PartialsToVibrationsConverter._adjust_range_by_spectrality(
             partial, range_adjusted_by_filter, absolute_position_on_timeline
         )
         return range_adjusted_by_spectrality
@@ -182,7 +194,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         else:
             loudness_range_value = loudness_range[1] - loudness_range[0]
             loudness_percentage = random.uniform(
-                loudness_range[0] + (loudness_range_value * 0.8), loudness_range[1]
+                loudness_range[0] + (loudness_range_value * 0.7), loudness_range[1]
             )
             # loudness_percentage = loudness_range[1]
 
@@ -231,13 +243,13 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         n_min_phases_range = sc_constants.MINIMAL_PHASES_PER_SOUND_TENDENCY.range_at(
             absolute_time
         )
-        # depending on the frequency of the partial a different n_min_phases value
-        # get calculated
+
         minimal_number_of_phases = math.ceil(
             n_min_phases_range[0]
             + (
                 (n_min_phases_range[1] - n_min_phases_range[0])
-                * PartialsToVibrationsConverter._find_position_in_frequency_range(
+                # use linear (and not logarithmic) interpolation
+                * PartialsToVibrationsConverter._find_linear_position_in_frequency_range(
                     partial.pitch.frequency
                 )
             )
@@ -370,7 +382,8 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         if last_state is True:
             density_based_likelihood = abs(1 - density_based_likelihood)
 
-        return 0.5 * (metricity + density_based_likelihood)
+        # return metricity * density_based_likelihood
+        return (metricity + density_based_likelihood) / 2
 
     def _initialise_start_state_of_stochastic_rhythm(
         self,
@@ -596,10 +609,30 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         release_duration = sc_constants.RELEASE_DURATION_TENDENCY.value_at(
             absolute_position_on_timeline
         )
-        instrument = sc_constants.SYNTHESIZER_CURVE.gamble_at(
+        # don't allow subtractive synthesis for very low frequencies (experience
+        # showed that this does lead to satisfying musical results)
+        if partial.nth_cycle == 0 and partial.nth_partial < 2:
+            instrument = 1
+        else:
+            instrument = sc_constants.SYNTHESIZER_CURVE.gamble_at(
+                absolute_position_on_timeline
+            )
+        bandwidth = PartialsToVibrationsConverter._adjust_bandwidth_depending_by_vibration_pitch(
+            sc_constants.BANDWIDTH.value_at(absolute_position_on_timeline),
+            partial.pitch,
+        )
+        glissando_start_pitch = sc_constants.GLISSANDO_START_PITCH_CURVE.gamble_at(
             absolute_position_on_timeline
         )
-        bandwidth = sc_constants.BANDWIDTH.value_at(absolute_position_on_timeline)
+        glissando_end_pitch = sc_constants.GLISSANDO_END_PITCH_CURVE.gamble_at(
+            absolute_position_on_timeline
+        )
+        glissando_start_duration = sc_constants.GLISSANDO_START_DURATION_TENDENCY.value_at(
+            absolute_position_on_timeline
+        )
+        glissando_end_duration = sc_constants.GLISSANDO_END_DURATION_TENDENCY.value_at(
+            absolute_position_on_timeline
+        )
         return classes.Vibration(
             partial.pitch,
             duration,
@@ -608,18 +641,22 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             release_duration,
             instrument,
             bandwidth,
+            partial.pitch + glissando_start_pitch,
+            partial.pitch + glissando_end_pitch,
+            glissando_start_duration,
+            glissando_end_duration,
         )
 
     def _make_vibrations(
         self, partial: classes.Partial, absolute_time: float, dynamic_curve: int,
     ) -> basic.SequentialEvent[classes.Vibration]:
         duration_of_one_phase = partial.period_duration
-        # (rhythm, n_vibrations,) = self._find_activity_level_rhythm_of_vibrations(
-        #     partial, absolute_time, dynamic_curve
-        # )
-        (rhythm, n_vibrations,) = self._find_stochastic_rhythm_of_vibrations(
+        (rhythm, n_vibrations,) = self._find_activity_level_rhythm_of_vibrations(
             partial, absolute_time, dynamic_curve
         )
+        # (rhythm, n_vibrations,) = self._find_stochastic_rhythm_of_vibrations(
+        #     partial, absolute_time, dynamic_curve
+        # )
         nth_vibration = 0
         vibrations = basic.SequentialEvent([])
         for absolute_phases, part in zip(rhythm.absolute_times, rhythm):

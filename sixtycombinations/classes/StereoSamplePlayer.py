@@ -5,7 +5,7 @@ from mutwo import parameters
 class StereoSamplePlayer(events.basic.SimpleEvent):
     def __init__(
         self,
-        duration: parameters.durations.abc.DurationType,
+        duration: parameters.abc.DurationType,
         path: str,
         panning: float,
     ):

@@ -24,11 +24,14 @@ random.seed(sc_constants.RANDOM_SEED)
 
 
 class PartialsToVibrationsConverter(converters.abc.Converter):
-    def __init__(self, metricity_range: tuple = (0.1, 1)):
+    def __init__(
+        self, metricity_range: tuple = (0.1, 1), apply_frequency_response: bool = False
+    ):
         self.activity_levels = tuple(
             infit.ActivityLevel(nth_level) for nth_level in range(11)
         )
         self.metricity_range = metricity_range
+        self._apply_frequency_response = apply_frequency_response
 
     # ######################################################## #
     #               general static methods                     #
@@ -208,11 +211,20 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         absolute_position_on_timeline: float,
         nth_vibration: float,
         dynamic_curve: int,  # -1, 0, 1
+        apply_frequency_response: bool,
     ) -> float:
         loudness_level = PartialsToVibrationsConverter._find_loudness_level_of_vibration(
             partial, absolute_position_on_timeline, nth_vibration, dynamic_curve
         )
-        amplitude = sc_constants.LOUDNESS_CONVERTER[partial.loudspeaker.name][
+
+        if apply_frequency_response:
+            loudness_converter = sc_constants.LOUDNESS_CONVERTER_WITH_FREQUENCY_RESPONSE
+        else:
+            loudness_converter = (
+                sc_constants.LOUDNESS_CONVERTER_WITHOUT_FREQUENCY_RESPONSE
+            )
+
+        amplitude = loudness_converter[partial.loudspeaker.name][
             loudness_level
         ].convert(partial.pitch.frequency)
         return amplitude
@@ -589,6 +601,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         absolute_position_on_timeline: float,
         nth_vibration: float,
         dynamic_curve: int,  # -1, 0, 1
+        apply_frequency_response: bool,
     ) -> classes.Vibration:
         """Generate vibration from partial data.
 
@@ -600,7 +613,11 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         :param dynamic_curve: 1 for cresc, -1 for decresc, 0 for static curve
         """
         amplitude = PartialsToVibrationsConverter._find_amplitude_of_vibration(
-            partial, absolute_position_on_timeline, nth_vibration, dynamic_curve
+            partial,
+            absolute_position_on_timeline,
+            nth_vibration,
+            dynamic_curve,
+            apply_frequency_response,
         )
         duration = n_phases * partial.period_duration
         attack_duration = sc_constants.ATTACK_DURATION_TENDENCY.value_at(
@@ -674,6 +691,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
                         absolute_position_on_timeline,
                         nth_vibration / n_vibrations,
                         dynamic_curve,
+                        self._apply_frequency_response,
                     )
                 )
                 nth_vibration += 1

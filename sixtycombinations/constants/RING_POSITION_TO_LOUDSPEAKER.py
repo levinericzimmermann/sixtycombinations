@@ -19,7 +19,10 @@ where POSITION =
 from sixtycombinations.constants import LOUDSPEAKERS
 
 RING_POSITION_TO_LOUDSPEAKER = (
-    tuple(LOUDSPEAKERS["K50FL"] for _ in range(6)),
-    tuple(LOUDSPEAKERS["K50FL"] for _ in range(5)),
-    tuple(LOUDSPEAKERS["K50FL"] for _ in range(4)),
+    tuple(
+        LOUDSPEAKERS[name]
+        for name in ("WS25E", "FRS7S", "FRS7S", "HW806", "FRS7S", "FRS7S")
+    ),
+    tuple(LOUDSPEAKERS[name] for name in ("K50FL", "FRS7S", "K50FL", "HW806", "K50FL")),
+    tuple(LOUDSPEAKERS[name] for name in ("K50FL", "K50FL", "K50FL", "K50FLS")),
 )

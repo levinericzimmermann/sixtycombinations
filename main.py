@@ -1,8 +1,8 @@
 """Render sound files."""
 
 import os
-import time
 import threading
+import time
 
 import sox
 
@@ -39,9 +39,11 @@ def _print_density_per_speaker(
     print("")
 
 
-def _convert_partials_to_vibrations() -> basic.SimultaneousEvent:
-    partials_to_vibrations_converter = (
-        sixtycombinations.converters.symmetrical.PartialsToVibrationsConverter()
+def _convert_partials_to_vibrations(
+    apply_frequency_response: bool,
+) -> basic.SimultaneousEvent:
+    partials_to_vibrations_converter = sixtycombinations.converters.symmetrical.PartialsToVibrationsConverter(
+        apply_frequency_response=apply_frequency_response
     )
     return basic.SimultaneousEvent(
         # cycles
@@ -133,8 +135,8 @@ def _cut_sound_file(
         absolute_sample_path,
         "sixtycombinations/synthesis/Remix.orc",
         csound_score_converter,
-            converters.frontends.csound_constants.SILENT_FLAG,
-            converters.frontends.csound_constants.FORMAT_64BIT
+        converters.frontends.csound_constants.SILENT_FLAG,
+        converters.frontends.csound_constants.FORMAT_64BIT,
     )
     csound_converter.convert(basic.SimultaneousEvent([part0, part1]))
     os.remove(csound_score_converter.path)  # remove score file
@@ -178,7 +180,7 @@ def _mix_sound_files(n_channels: int):
             "sixtycombinations/synthesis/StereoMixdown.orc",
             csound_score_converter,
             converters.frontends.csound_constants.SILENT_FLAG,
-            converters.frontends.csound_constants.FORMAT_64BIT
+            converters.frontends.csound_constants.FORMAT_64BIT,
         )
         simultaneous_event = basic.SimultaneousEvent([])
         for nth_cycle, loudspeakers in enumerate(
@@ -211,7 +213,7 @@ def _mix_sound_files(n_channels: int):
 
 if __name__ == "__main__":
     # (1) convert partials to vibrations
-    nested_vibrations = _convert_partials_to_vibrations()
+    nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
 
     _print_density_per_speaker(nested_vibrations)
 

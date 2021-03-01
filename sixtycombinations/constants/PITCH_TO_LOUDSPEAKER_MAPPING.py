@@ -16,7 +16,9 @@ mapping_cycles_per_ring = (
     # (e.g. second element == 2 means that the second speaker plays
     # the third partial of a sound)
     itertools.cycle(((0, 2, 4, 1, 3, 5), (0, 5, 3, 1, 4, 2))),
-    itertools.cycle(((0, 2, 4, 1, 3), (0, 3, 1, 4, 2))),
+    itertools.cycle(
+        ((0, 2, 4, 1, 3), (0, 2, 3, 1, 4), (0, 2, 4, 1, 3), (0, 4, 3, 1, 2))
+    ),
     itertools.cycle(((0, 3, 1, 2), (0, 2, 1, 3))),
 )
 
@@ -28,13 +30,19 @@ PITCH_TO_LOUDSPEAKER_MAPPING = [
     tuple(
         next(mapping_cycles_per_ring[0]) for harmony in HARMONIES_IN_CORRECT_REGISTER[0]
     ),
-    [],
+    # central cycle:
+    # -> always set fundamental to the fourth speaker, and first overtone to the second
+    # speaker, because the other speakers can't handle deeper frequencies very well...
+    tuple(
+        rotate(next(mapping_cycles_per_ring[1]), 3)
+        for harmony in HARMONIES_IN_CORRECT_REGISTER[1]
+    ),
     [],
 ]
 
 # add the second and the third cycles
 for nth_cycle, harmonies in enumerate(HARMONIES_IN_CORRECT_REGISTER):
-    if nth_cycle > 0:
+    if nth_cycle > 1:
         lower_pitch_group_index_divider = len(harmonies) // len(
             HARMONIES_IN_CORRECT_REGISTER[nth_cycle - 1]
         )

@@ -74,8 +74,11 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         tendency_range: typing.Tuple[float],
         absolute_position_on_timeline: float,
     ) -> typing.Tuple[float]:
-        current_spectrality = sc_constants.SPECTRALITY.value_at(
-            absolute_position_on_timeline
+        # current_spectrality = sc_constants.SPECTRALITY.value_at(
+        #     absolute_position_on_timeline
+        # )
+        current_spectrality = sc_constants.WEATHER.get_value_of_at(
+            "spectrality", absolute_position_on_timeline
         )
         equal_range_distribution = classes.EqualRangeDistribution(
             *tendency_range,
@@ -95,11 +98,17 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             partial.pitch.frequency
         )
 
-        current_filter_frequency = sc_constants.FILTER_FREQUENCY.value_at(
-            absolute_position_on_timeline
+        # current_filter_frequency = sc_constants.FILTER_FREQUENCY.value_at(
+        #     absolute_position_on_timeline
+        # )
+        current_filter_frequency = sc_constants.WEATHER.get_value_of_at(
+            "filter_frequency", absolute_position_on_timeline
         )
-        current_filter_quality = sc_constants.FILTER_Q.value_at(
-            absolute_position_on_timeline
+        # current_filter_quality = sc_constants.FILTER_Q.value_at(
+        #     absolute_position_on_timeline
+        # )
+        current_filter_quality = sc_constants.WEATHER.get_value_of_at(
+            "filter_q", absolute_position_on_timeline
         )
 
         if current_filter_quality <= -15:
@@ -139,7 +148,10 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
     ) -> float:
         density_range = PartialsToVibrationsConverter._adjust_tendency_range(
             partial,
-            sc_constants.DENSITY_TENDENCY.range_at(absolute_position_on_timeline),
+            # sc_constants.DENSITY_TENDENCY.range_at(absolute_position_on_timeline),
+            sc_constants.WEATHER.get_range_of_at(
+                "density", absolute_position_on_timeline
+            ),
             absolute_position_on_timeline,
         )
 
@@ -184,7 +196,10 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
     ) -> int:
         loudness_range = PartialsToVibrationsConverter._adjust_tendency_range(
             partial,
-            sc_constants.LOUDNESS_TENDENCY.range_at(absolute_position_on_timeline),
+            # sc_constants.LOUDNESS_TENDENCY.range_at(absolute_position_on_timeline),
+            sc_constants.WEATHER.get_range_of_at(
+                "loudness", absolute_position_on_timeline
+            ),
             absolute_position_on_timeline,
         )
 
@@ -252,8 +267,14 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
     def _get_minimal_number_of_phases(
         partial: classes.Partial, absolute_time: float
     ) -> int:
-        n_min_phases_range = sc_constants.MINIMAL_PHASES_PER_SOUND_TENDENCY.range_at(
-            absolute_time
+        absolute_position_on_timeline = PartialsToVibrationsConverter._find_absolute_position_on_timeline(
+            partial.nth_cycle, absolute_time
+        )
+        # n_min_phases_range = sc_constants.MINIMAL_PHASES_PER_SOUND_TENDENCY.range_at(
+        #     absolute_time
+        # )
+        n_min_phases_range = sc_constants.WEATHER.get_range_of_at(
+            "minimal_phases_per_sound", absolute_position_on_timeline
         )
 
         minimal_number_of_phases = math.ceil(
@@ -620,35 +641,59 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             apply_frequency_response,
         )
         duration = n_phases * partial.period_duration
-        attack_duration = sc_constants.ATTACK_DURATION_TENDENCY.value_at(
-            absolute_position_on_timeline
+        # attack_duration = sc_constants.ATTACK_DURATION_TENDENCY.value_at(
+        #     absolute_position_on_timeline
+        # )
+        attack_duration = sc_constants.WEATHER.get_value_of_at(
+            "attack_duration", absolute_position_on_timeline
         )
-        release_duration = sc_constants.RELEASE_DURATION_TENDENCY.value_at(
-            absolute_position_on_timeline
+        # release_duration = sc_constants.RELEASE_DURATION_TENDENCY.value_at(
+        #     absolute_position_on_timeline
+        # )
+        release_duration = sc_constants.WEATHER.get_value_of_at(
+            "release_duration", absolute_position_on_timeline
         )
         # don't allow subtractive synthesis for very low frequencies (experience
         # showed that this does lead to satisfying musical results)
         if partial.nth_cycle == 0 and partial.nth_partial < 2:
             instrument = 1
         else:
-            instrument = sc_constants.SYNTHESIZER_CURVE.gamble_at(
-                absolute_position_on_timeline
+            # instrument = sc_constants.SYNTHESIZER_CURVE.gamble_at(
+            #     absolute_position_on_timeline
+            # )
+            instrument = sc_constants.WEATHER.get_value_of_at(
+                "synthesizer", absolute_position_on_timeline
             )
-        bandwidth = PartialsToVibrationsConverter._adjust_bandwidth_depending_by_vibration_pitch(
-            sc_constants.BANDWIDTH.value_at(absolute_position_on_timeline),
-            partial.pitch,
+        # bandwidth = PartialsToVibrationsConverter._adjust_bandwidth_depending_by_vibration_pitch(
+        #     sc_constants.BANDWIDTH.value_at(absolute_position_on_timeline),
+        #     partial.pitch,
+        # )
+        bandwidth = sc_constants.WEATHER.get_value_of_at(
+            "bandwidth", absolute_position_on_timeline
         )
-        glissando_start_pitch = sc_constants.GLISSANDO_START_PITCH_CURVE.gamble_at(
-            absolute_position_on_timeline
+        # glissando_start_pitch = sc_constants.GLISSANDO_START_PITCH_CURVE.gamble_at(
+        #     absolute_position_on_timeline
+        # )
+        glissando_start_pitch = sc_constants.WEATHER.get_value_of_at(
+            "glissando_start_pitch", absolute_position_on_timeline
         )
-        glissando_end_pitch = sc_constants.GLISSANDO_END_PITCH_CURVE.gamble_at(
-            absolute_position_on_timeline
+        # glissando_end_pitch = sc_constants.GLISSANDO_END_PITCH_CURVE.gamble_at(
+        #     absolute_position_on_timeline
+        # )
+        glissando_end_pitch = sc_constants.WEATHER.get_value_of_at(
+            "glissando_end_pitch", absolute_position_on_timeline
         )
-        glissando_start_duration = sc_constants.GLISSANDO_START_DURATION_TENDENCY.value_at(
-            absolute_position_on_timeline
+        # glissando_start_duration = sc_constants.GLISSANDO_START_DURATION_TENDENCY.value_at(
+        #     absolute_position_on_timeline
+        # )
+        glissando_start_duration = sc_constants.WEATHER.get_value_of_at(
+            "glissando_start_duration", absolute_position_on_timeline
         )
-        glissando_end_duration = sc_constants.GLISSANDO_END_DURATION_TENDENCY.value_at(
-            absolute_position_on_timeline
+        # glissando_end_duration = sc_constants.GLISSANDO_END_DURATION_TENDENCY.value_at(
+        #     absolute_position_on_timeline
+        # )
+        glissando_end_duration = sc_constants.WEATHER.get_value_of_at(
+            "glissando_end_duration", absolute_position_on_timeline
         )
         return classes.Vibration(
             partial.pitch,

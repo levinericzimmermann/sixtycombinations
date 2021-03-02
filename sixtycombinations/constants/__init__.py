@@ -85,4 +85,6 @@ from .STATIC_TENDENCIES import (
     FILTER_Q,
 )
 
+from .WEATHER import WEATHER
+
 # ###############################################################################

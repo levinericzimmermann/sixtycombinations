@@ -95,8 +95,8 @@ STATES = (
             "minimal_phases_per_sound": classes.Tendency(
                 # expenvelope.Envelope.from_points((0, 40), (1, 40)),
                 # expenvelope.Envelope.from_points((0, 950), (1, 950)),
-                expenvelope.Envelope.from_points((0, 7), (1, 7)),
-                expenvelope.Envelope.from_points((0, 7000), (1, 7000)),
+                expenvelope.Envelope.from_points((0, 9), (1, 9)),
+                expenvelope.Envelope.from_points((0, 9000), (1, 9000)),
                 # expenvelope.Envelope.from_points((0, 250), (1, 250)),
                 # expenvelope.Envelope.from_points((0, 27000), (1, 27000)),
             ),
@@ -109,7 +109,7 @@ STATES = (
             ),
             "loudness": classes.Tendency(
                 expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
-                expenvelope.Envelope.from_points((0, 0.65), (1, 0.65)),
+                expenvelope.Envelope.from_points((0, 0.7), (1, 0.7)),
             ),
             "synthesizer": classes.DynamicChoice(
                 # 1 -> sine
@@ -123,11 +123,14 @@ STATES = (
                 ),
             ),
             "bandwidth": expenvelope.Envelope.from_points((0, 0.91), (1, 0.91),),
-            "filter_frequency": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
+            "filter_frequency": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
+                expenvelope.Envelope.from_points((0, 0.99), (1, 0.99)),
+            ),
             "filter_q": expenvelope.Envelope.from_points((0, -16), (1, -16),),
         },
-        lambda: 35,
-        lambda: 15,
+        lambda: 85,
+        lambda: 25,
         0,
         0,
     ),
@@ -221,7 +224,7 @@ STATES = (
             ),
             "loudness": classes.Tendency(
                 expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
-                expenvelope.Envelope.from_points((0, 0.65), (1, 0.65)),
+                expenvelope.Envelope.from_points((0, 0.74), (1, 0.74)),
             ),
             "synthesizer": classes.DynamicChoice(
                 # 1 -> sine
@@ -235,11 +238,14 @@ STATES = (
                 ),
             ),
             "bandwidth": expenvelope.Envelope.from_points((0, 5.51), (1, 4.21),),
-            "filter_frequency": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
+            "filter_frequency": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
+                expenvelope.Envelope.from_points((0, 0.99), (1, 0.99)),
+            ),
             "filter_q": expenvelope.Envelope.from_points((0, -16), (1, -16),),
         },
-        lambda: 15,
-        lambda: 4,
+        lambda: 50,
+        lambda: 10,
         0,
         0,
     ),
@@ -248,7 +254,7 @@ STATES = (
         {
             "attack_duration": classes.Tendency(
                 expenvelope.Envelope.from_points((0, 3.3), (1, 3.3)),
-                expenvelope.Envelope.from_points((0, 4.2), (1, 4.2)),
+                expenvelope.Envelope.from_points((0, 5.2), (1, 5.2)),
             ),
             "release_duration": classes.Tendency(
                 expenvelope.Envelope.from_points((0, 3.8), (1, 3.8)),
@@ -266,11 +272,11 @@ STATES = (
                 ),
                 (
                     # 8/9
-                    expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
-                    # 15/16
-                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
-                    # 24/25
                     expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+                    # 15/16
+                    expenvelope.Envelope.from_points((0, 0.6), (1, 0.6)),
+                    # 24/25
+                    expenvelope.Envelope.from_points((0, 0.7), (1, 0.7)),
                     # 1/1
                     expenvelope.Envelope.from_points((0, 1.2), (1, 1.2)),
                     # 25/24
@@ -309,8 +315,8 @@ STATES = (
                 ),
             ),
             "glissando_start_duration": classes.Tendency(
-                expenvelope.Envelope.from_points((0, 0.03), (1, 0.03)),
-                expenvelope.Envelope.from_points((0, 0.45), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 0.3), (1, 0.3)),
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
             ),
             "glissando_end_duration": classes.Tendency(
                 expenvelope.Envelope.from_points((0, 0.08), (1, 0.08)),
@@ -319,8 +325,8 @@ STATES = (
             "minimal_phases_per_sound": classes.Tendency(
                 # expenvelope.Envelope.from_points((0, 40), (1, 40)),
                 # expenvelope.Envelope.from_points((0, 950), (1, 950)),
-                expenvelope.Envelope.from_points((0, 302), (1, 302)),
-                expenvelope.Envelope.from_points((0, 20000), (1, 20000)),
+                expenvelope.Envelope.from_points((0, 82), (1, 82)),
+                expenvelope.Envelope.from_points((0, 12000), (1, 12000)),
                 # expenvelope.Envelope.from_points((0, 250), (1, 250)),
                 # expenvelope.Envelope.from_points((0, 27000), (1, 27000)),
             ),
@@ -328,11 +334,11 @@ STATES = (
             "density": classes.Tendency(
                 # where 0 represents the lowest density
                 # and 1 represents the highest density
-                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
-                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.9), (1, 0.9)),
             ),
             "loudness": classes.Tendency(
-                expenvelope.Envelope.from_points((0, 0.7), (1, 0.7)),
+                expenvelope.Envelope.from_points((0, 0.6), (1, 0.6)),
                 expenvelope.Envelope.from_points((0, 1), (1, 1)),
             ),
             "synthesizer": classes.DynamicChoice(
@@ -346,12 +352,15 @@ STATES = (
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
-            "bandwidth": expenvelope.Envelope.from_points((0, 47.91), (1, 47.91),),
-            "filter_frequency": expenvelope.Envelope.from_points((0, 0.1), (1, 0.1),),
-            "filter_q": expenvelope.Envelope.from_points((0, 5), (1, 5),),
+            "bandwidth": expenvelope.Envelope.from_points((0, 20.91), (1, 20.91),),
+            "filter_frequency": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.001), (1, 0.001)),
+                expenvelope.Envelope.from_points((0, 0.27), (1, 0.27)),
+            ),
+            "filter_q": expenvelope.Envelope.from_points((0, 11), (1, 11),),
         },
-        lambda: 120,
-        lambda: 15,
+        lambda: 90,
+        lambda: 40,
         0,
         0,
     ),
@@ -459,7 +468,10 @@ STATES = (
                 ),
             ),
             "bandwidth": expenvelope.Envelope.from_points((0, 27.91), (1, 27.91),),
-            "filter_frequency": expenvelope.Envelope.from_points((0, 0.15), (1, 0.15),),
+            "filter_frequency": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.001), (1, 0.001)),
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+            ),
             "filter_q": expenvelope.Envelope.from_points((0, -6), (1, -6),),
         },
         lambda: 10,
@@ -544,7 +556,7 @@ STATES = (
                 # expenvelope.Envelope.from_points((0, 40), (1, 40)),
                 # expenvelope.Envelope.from_points((0, 950), (1, 950)),
                 expenvelope.Envelope.from_points((0, 100), (1, 100)),
-                expenvelope.Envelope.from_points((0, 14000), (1, 14000)),
+                expenvelope.Envelope.from_points((0, 12000), (1, 12000)),
                 # expenvelope.Envelope.from_points((0, 250), (1, 250)),
                 # expenvelope.Envelope.from_points((0, 27000), (1, 27000)),
             ),
@@ -556,7 +568,7 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 1), (1, 1)),
             ),
             "loudness": classes.Tendency(
-                expenvelope.Envelope.from_points((0, 0.9), (1, 0.9)),
+                expenvelope.Envelope.from_points((0, 0.7), (1, 0.7)),
                 expenvelope.Envelope.from_points((0, 1), (1, 1)),
             ),
             "synthesizer": classes.DynamicChoice(
@@ -565,17 +577,20 @@ STATES = (
                 (1, 2),
                 (
                     # sine
-                    expenvelope.Envelope.from_points((0, 0.3), (1, 0.3)),
+                    expenvelope.Envelope.from_points((0, 0.9), (1, 0.9)),
                     # filtered noise
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "bandwidth": expenvelope.Envelope.from_points((0, 17.91), (1, 17.91),),
-            "filter_frequency": expenvelope.Envelope.from_points((0, 0.89), (1, 0.89),),
-            "filter_q": expenvelope.Envelope.from_points((0, 5), (1, 5),),
+            "filter_frequency": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.68), (1, 0.68)),
+                expenvelope.Envelope.from_points((0, 0.999), (1, 0.999)),
+            ),
+            "filter_q": expenvelope.Envelope.from_points((0, 14), (1, 14),),
         },
-        lambda: 180,
-        lambda: 15,
+        lambda: 110,
+        lambda: 40,
         0,
         0,
     ),
@@ -592,4 +607,4 @@ CHAIN = yamm.Chain(
 )
 CHAIN.make_deterministic_map()
 
-WEATHER = classes.Weather("damped", STATES, CHAIN, DURATION, seed=150)
+WEATHER = classes.Weather("xenakis", STATES, CHAIN, DURATION, seed=150)

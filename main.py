@@ -11,7 +11,6 @@ from mutwo.events import basic
 
 import sixtycombinations
 
-
 def _is_active(node: basic.SimpleEvent) -> bool:
     return isinstance(node, sixtycombinations.classes.Vibration)
 
@@ -274,6 +273,7 @@ if __name__ == "__main__":
     nested_cut_vibrations = _cut_vibrations(nested_vibrations)
 
     # nested_cut_vibrations.cut_up(0, 122)
+    # print(nested_cut_vibrations.duration)
 
     _print_density_per_speaker(nested_cut_vibrations)
 

@@ -101,7 +101,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         # current_filter_frequency = sc_constants.FILTER_FREQUENCY.value_at(
         #     absolute_position_on_timeline
         # )
-        current_filter_frequency = sc_constants.WEATHER.get_value_of_at(
+        current_filter_frequency_range = sc_constants.WEATHER.get_range_of_at(
             "filter_frequency", absolute_position_on_timeline
         )
         # current_filter_quality = sc_constants.FILTER_Q.value_at(
@@ -116,8 +116,9 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
 
         filter_envelope = expenvelope.Envelope.from_points(
             (0, 0, current_filter_quality),
-            (current_filter_frequency, 1, -current_filter_quality),
-            (1, 0, current_filter_quality),
+            (current_filter_frequency_range[0], 1, 0),
+            (current_filter_frequency_range[1], 1, -current_filter_quality),
+            (1, 0, 0),
         )
         factor = filter_envelope.value_at(position_in_frequency_range)
 

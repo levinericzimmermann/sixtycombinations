@@ -41,7 +41,13 @@ def _print_density_per_speaker(
 
 def _convert_partials_to_vibrations(
     apply_frequency_response: bool,
-) -> basic.SimultaneousEvent:
+) -> basic.SimultaneousEvent[
+    basic.SimultaneousEvent[
+        basic.SimultaneousEvent[
+            basic.SequentialEvent[sixtycombinations.classes.Vibration]
+        ]
+    ]
+]:
     partials_to_vibrations_converter = sixtycombinations.converters.symmetrical.PartialsToVibrationsConverter(
         apply_frequency_response=apply_frequency_response
     )
@@ -64,6 +70,55 @@ def _convert_partials_to_vibrations(
             for cycle in sixtycombinations.constants.NESTED_PARTIALS
         ]
     )
+
+
+def _cut_vibrations(
+    nested_vibrations: basic.SimultaneousEvent,
+) -> basic.SimultaneousEvent:
+    cycles = basic.SimultaneousEvent([])
+
+    for nth_cycle, cycle in enumerate(nested_vibrations):
+        absolute_start_time = sixtycombinations.constants.ABSOLUTE_START_TIME_PER_GROUP[
+            nth_cycle
+        ]
+        loudspeakers = basic.SimultaneousEvent([])
+
+        for nth_speaker, speaker_data in enumerate(cycle):
+            end_point = sixtycombinations.constants.DURATION - absolute_start_time
+            a_and_b = basic.SimultaneousEvent(
+                [
+                    sequential_event.cut_up(0, end_point, mutate=False)
+                    for sequential_event in speaker_data
+                ]
+            )
+            if absolute_start_time > 0:
+                [
+                    sequential_event.insert(0, basic.SimpleEvent(absolute_start_time))
+                    for sequential_event in a_and_b
+                ]
+
+            c_and_d = basic.SimultaneousEvent([])
+            for sequential_event in speaker_data:
+                sequential_event_duration = sequential_event.duration
+                if sequential_event_duration > end_point:
+                    new_sequential_event = sequential_event.cut_up(
+                        end_point, sequential_event.duration, mutate=False
+                    )
+                else:
+                    new_sequential_event = basic.SequentialEvent([])
+
+                difference = (
+                    sixtycombinations.constants.DURATION - new_sequential_event.duration
+                )
+                new_sequential_event.append(basic.SimpleEvent(difference))
+                c_and_d.append(new_sequential_event)
+
+            new_speaker_data = basic.SimultaneousEvent(a_and_b[:] + c_and_d[:])
+            loudspeakers.append(new_speaker_data)
+
+        cycles.append(loudspeakers)
+
+    return cycles
 
 
 def _render_vibrations_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
@@ -215,13 +270,18 @@ if __name__ == "__main__":
     # (1) convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
 
-    _print_density_per_speaker(nested_vibrations)
+    # (2) adjust (cut) vibrations
+    nested_cut_vibrations = _cut_vibrations(nested_vibrations)
 
-    # (2) render partials to sound files
-    _render_vibrations_to_sound_files(nested_vibrations)
+    # nested_cut_vibrations.cut_up(0, 122)
 
-    # (3) adjust (cut) sound files
-    _cut_sound_files(nested_vibrations)
+    _print_density_per_speaker(nested_cut_vibrations)
+
+    # (3) render vibrations to sound files
+    _render_vibrations_to_sound_files(nested_cut_vibrations)
+
+    # deprecated (has been replaced by _cut_vibrations)
+    # _cut_sound_files(nested_vibrations)
 
     # (4) mix sound files together to one single wav file
     _mix_sound_files(2)

@@ -116,7 +116,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
 
         filter_envelope = expenvelope.Envelope.from_points(
             (0, 0, current_filter_quality),
-            (current_filter_frequency, 1, current_filter_quality),
+            (current_filter_frequency, 1, -current_filter_quality),
             (1, 0, current_filter_quality),
         )
         factor = filter_envelope.value_at(position_in_frequency_range)

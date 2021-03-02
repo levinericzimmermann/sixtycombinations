@@ -130,18 +130,19 @@ class Weather(object):
         active_states = []
         while summed_duration < duration:
             current_state = states[state_names.index(next(generator))]
+            print(current_state.name)
             sustain = current_state.duration_maker()
             if last_state is None:
-                attack = None
+                relative_attack = None
             else:
-                attack = (
+                relative_attack = (
                     last_state.transition_duration_maker()
                     + current_state.transition_duration_maker()
                 ) * 0.5
 
-            sustain_start = summed_duration + attack if attack else summed_duration
+            sustain_start = summed_duration + relative_attack if relative_attack else summed_duration
             sustain = (sustain_start, sustain_start + sustain)
-            attack = summed_duration if attack else None
+            attack = summed_duration if relative_attack else None
 
             new_summed_duration = sustain[-1]
             if new_summed_duration > duration:

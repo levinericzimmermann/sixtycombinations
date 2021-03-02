@@ -57,7 +57,7 @@ class Vibration(basic.SimpleEvent):
             if release_duration > 0:
                 release_duration *= 0.99
 
-        return attack_duration, release_duration
+        return attack_duration / duration, release_duration / duration
 
     def __repr__(self):
         return "Vibration({}, {}, {})".format(

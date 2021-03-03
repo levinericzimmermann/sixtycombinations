@@ -38,6 +38,30 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
     # ######################################################## #
 
     @staticmethod
+    def _cut_vibrations(
+        nth_cycle: int, vibrations: basic.SequentialEvent[classes.Vibration],
+    ) -> basic.SimultaneousEvent[basic.SequentialEvent[classes.Vibration]]:
+        absolute_start_time = sc_constants.ABSOLUTE_START_TIME_PER_GROUP[nth_cycle]
+
+        end_point = sc_constants.DURATION - absolute_start_time
+        first_part = vibrations.cut_up(0, end_point, mutate=False)
+        if absolute_start_time > 0:
+            first_part.insert(0, basic.SimpleEvent(absolute_start_time))
+
+        vibrations_duration = vibrations.duration
+        if vibrations_duration > end_point:
+            second_part = vibrations.cut_up(
+                end_point, vibrations_duration, mutate=False
+            )
+        else:
+            second_part = basic.SequentialEvent([])
+
+        difference = sc_constants.DURATION - second_part.duration
+        second_part.append(basic.SimpleEvent(difference))
+
+        return basic.SimultaneousEvent([first_part, second_part])
+
+    @staticmethod
     def _find_position_in_frequency_range(frequency: float) -> float:
         max_factor = math.log(
             sc_constants.REAL_FREQUENCY_RANGE[1] / sc_constants.REAL_FREQUENCY_RANGE[0],
@@ -771,8 +795,10 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
 
     def convert(
         self, event_to_convert: ConvertableEvent
-    ) -> basic.SequentialEvent[classes.Vibration]:
+    ) -> basic.SimultaneousEvent[basic.SequentialEvent[classes.Vibration]]:
         new_sequential_event = basic.SequentialEvent([])
+
+        nth_cycle = 0
 
         for absolute_time, partial in zip(
             event_to_convert.absolute_times, event_to_convert
@@ -783,9 +809,14 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
                 new_sequential_event.extend(
                     self._convert_partial_to_vibrations(absolute_time, partial)
                 )
+                nth_cycle = partial.nth_cycle
 
             # rest to rest
             else:
                 new_sequential_event.append(basic.SimpleEvent(partial.duration))
 
-        return new_sequential_event
+        cut_up_event = PartialsToVibrationsConverter._cut_vibrations(
+            nth_cycle, new_sequential_event
+        )
+
+        return cut_up_event

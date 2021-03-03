@@ -28,6 +28,30 @@ from .HARMONIES import HARMONIES
 from .HARMONIES_IN_CORRECT_REGISTER import HARMONIES_IN_CORRECT_REGISTER
 from .REAL_FREQUENCY_RANGE import REAL_FREQUENCY_RANGE
 
+import functools
+import operator
+
+from mutwo.utilities import tools
+
+AVAILABLE_PITCHES = tuple(
+    sorted(
+        tools.uniqify_iterable(
+            p.normalize(mutate=False)
+            for p in functools.reduce(
+                operator.add,
+                (
+                    functools.reduce(operator.add, group)
+                    for group in HARMONIES_IN_CORRECT_REGISTER
+                ),
+            )
+        )
+    )
+)
+
+AVAILABLE_PITCHES_WITH_FUNDAMENTAL_FUNCTION = tuple(
+    p for p in AVAILABLE_PITCHES if all([n <= 0 for n in p.exponents[1:]])
+)
+
 # ######################################################### #
 #                loudspeaker & loudspeaker positions        #
 # ######################################################### #

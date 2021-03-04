@@ -41,6 +41,13 @@ def _print_density_per_speaker(
     print("")
 
 
+def _convert_groups_to_reaper_marker_file():
+    reaper_marker_file_converter = sixtycombinations.converters.frontends.GroupsToReaperMarkerFileConverter(
+        "sixtycombinations/builds/reaper_marker.txt"
+    )
+    reaper_marker_file_converter.convert(sixtycombinations.constants.GROUPS)
+
+
 def _convert_partials_to_vibrations(
     apply_frequency_response: bool,
 ) -> basic.SimultaneousEvent[
@@ -172,6 +179,10 @@ def _mix_sound_files(n_channels: int):
 
 
 if __name__ == "__main__":
+    _convert_groups_to_reaper_marker_file()
+
+    # raise ValueError
+
     nested_note_likes = _convert_partials_to_note_likes()
     _render_note_likes_to_midi_files(nested_note_likes)
 

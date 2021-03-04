@@ -73,6 +73,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         second_part.append(basic.SimpleEvent(difference))
 
         return basic.SimultaneousEvent([first_part, second_part])
+        # return basic.SimultaneousEvent([first_part])
 
     @staticmethod
     def _remove_too_short_vibrations(
@@ -928,11 +929,7 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
         ):
 
             # one partial to many NoteLike
-            try:
-                print(partial.nth_partial)
-            except AttributeError:
-                pass
-            if isinstance(partial, classes.Partial) and partial.nth_partial in (1, 3):
+            if isinstance(partial, classes.Partial) and partial.nth_partial in (1,):
                 new_sequential_event.extend(
                     self._convert_partial_to_note_likes(absolute_time, partial)
                 )

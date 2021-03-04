@@ -3,7 +3,9 @@
 One Group is a set of pitches with just relationships.
 """
 
+import copy
 import functools
+import itertools
 import operator
 import typing
 
@@ -474,7 +476,13 @@ GROUPS = tuple(
 
 
 # multiply groups according to N_ITERATIONS_OF_HARMONIC_STRUCTURE variable
-GROUPS = tuple(group * N_ITERATIONS_OF_HARMONIC_STRUCTURE for group in GROUPS)
+GROUPS = tuple(
+    functools.reduce(
+        operator.add,
+        (copy.deepcopy(group) for _ in range(N_ITERATIONS_OF_HARMONIC_STRUCTURE)),
+    )
+    for group in GROUPS
+)
 
 
 # declare relative start time of each harmony in each group in seconds
@@ -490,7 +498,6 @@ for cycle in GROUPS:
 
 
 # print average difference of duration between different groups
-import itertools
 
 for nth_cycle, cycle in enumerate(GROUPS):
     for state in (0, 1, 2):

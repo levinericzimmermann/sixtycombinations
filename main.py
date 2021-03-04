@@ -1,4 +1,4 @@
-"""Render sound files."""
+"""Render and mix sound files."""
 
 import functools
 import operator
@@ -77,6 +77,40 @@ def _convert_partials_to_vibrations(
     )
 
 
+def _convert_partials_to_note_likes() -> basic.SimultaneousEvent[
+    basic.SimultaneousEvent[
+        basic.SimultaneousEvent[
+            basic.SequentialEvent[sixtycombinations.classes.Vibration]
+        ]
+    ]
+]:
+    partials_to_note_likes_converter = (
+        sixtycombinations.converters.symmetrical.PartialsToNoteLikesConverter()
+    )
+    note_likes = basic.SimultaneousEvent([])
+    for cycle in sixtycombinations.constants.NESTED_PARTIALS:
+        groupA = basic.SimultaneousEvent([])
+        groupB = basic.SimultaneousEvent([])
+        for speaker in cycle:
+            for nth_num, partials in enumerate(speaker):
+                group = (groupA, groupB)[nth_num]
+                group.extend(partials_to_note_likes_converter.convert(partials))
+        note_likes.append((groupA, groupB))
+    return note_likes
+
+
+def _render_note_likes_to_midi_files(nested_note_likes: basic.SimultaneousEvent):
+    for nth_cycle, cycle in enumerate(nested_note_likes):
+        for nth_group, group in enumerate(cycle):
+            group.duration *= 2  # tempo 120
+            midi_file_converter = converters.frontends.midi.MidiFileConverter(
+                "instr{}_{}.mid".format(nth_cycle, nth_group),
+                available_midi_channels=tuple(range(6)),
+                distribute_midi_channels=True,
+            )
+            midi_file_converter.convert(group)
+
+
 def _render_vibrations_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
     threads = []
     for nth_cycle, cycle in enumerate(nested_vibrations):
@@ -138,16 +172,20 @@ def _mix_sound_files(n_channels: int):
 
 
 if __name__ == "__main__":
-    # (1) convert partials to vibrations
+    nested_note_likes = _convert_partials_to_note_likes()
+    _render_note_likes_to_midi_files(nested_note_likes)
+
+    print("midi - done")
+
+    # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
-
-    # nested_vibrations.cut_up(0, 122)
+    # logging etc.
+    # nested_vibrations.cut_out(0, 122)
     # print(nested_vibrations.duration)
-
     _print_density_per_speaker(nested_vibrations)
 
-    # (2) render vibrations to sound files
+    # render vibrations to sound files
     _render_vibrations_to_sound_files(nested_vibrations)
 
-    # (3) mix sound files together to one single wav file
+    # mix sound files together to one single wav file
     _mix_sound_files(2)

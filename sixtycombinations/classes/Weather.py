@@ -3,6 +3,7 @@ import operator
 import typing
 
 import expenvelope
+from mutwo.events import basic
 import yamm
 
 from sixtycombinations.classes import DynamicChoice
@@ -28,6 +29,31 @@ class Weather(object):
         self._state_weight_envelopes = Weather._make_weight_envelope_per_state(
             start_state, states, markov_chain, duration
         )
+
+        # self._initialise_rests(duration)
+
+    # ######################################### #
+    #         initialise global rests           #
+    # ######################################### #
+
+    def _initialise_rests(self, duration: numbers.Number) -> None:
+        rests = basic.SequentialEvent([])
+        rests_duration = 0
+        while rests_duration < duration:
+            absolute_time = rests.duration / duration
+            rest_duration = self.get_value_of_at("rest_duration", absolute_time)
+            event = basic.SimpleEvent(rest_duration)
+            event.is_rest = self.get_value_of_at("activate_rest", absolute_time)
+            rests_duration += rest_duration
+            rests.append(event)
+
+        difference = rests_duration - duration
+        rests[-1].duration -= difference
+        self._rests = rests
+
+    @property
+    def rests(self) -> basic.SequentialEvent[basic.SimpleEvent]:
+        return self._rests
 
     # ######################################### #
     #       distribute weights of states        #
@@ -140,7 +166,11 @@ class Weather(object):
                     + current_state.transition_duration_maker()
                 ) * 0.5
 
-            sustain_start = summed_duration + relative_attack if relative_attack else summed_duration
+            sustain_start = (
+                summed_duration + relative_attack
+                if relative_attack
+                else summed_duration
+            )
             sustain = (sustain_start, sustain_start + sustain)
             attack = summed_duration if relative_attack else None
 

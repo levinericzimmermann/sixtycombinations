@@ -99,7 +99,7 @@ STATES = (
                 # expenvelope.Envelope.from_points((0, 40), (1, 40)),
                 # expenvelope.Envelope.from_points((0, 950), (1, 950)),
                 expenvelope.Envelope.from_points((0, 11), (1, 11)),
-                expenvelope.Envelope.from_points((0, 9900), (1, 9900)),
+                expenvelope.Envelope.from_points((0, 12900), (1, 12900)),
                 # expenvelope.Envelope.from_points((0, 250), (1, 250)),
                 # expenvelope.Envelope.from_points((0, 27000), (1, 27000)),
             ),
@@ -131,6 +131,16 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.99), (1, 0.99)),
             ),
             "filter_q": expenvelope.Envelope.from_points((0, -16), (1, -16),),
+            "activate_rest": classes.DynamicChoice(
+                (False, True),
+                (
+                    # no rest
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # rest
+                    expenvelope.Envelope.from_points((0, 0.0008), (1, 0.0008)),
+                ),
+            ),
+            "rest_duration": expenvelope.Envelope.from_points((0, 0.008), (1, 0.008),),
         },
         lambda: random.uniform(130, 220),
         lambda: 30,
@@ -246,6 +256,16 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.99), (1, 0.99)),
             ),
             "filter_q": expenvelope.Envelope.from_points((0, -16), (1, -16),),
+            "activate_rest": classes.DynamicChoice(
+                (False, True),
+                (
+                    # no rest
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # rest
+                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                ),
+            ),
+            "rest_duration": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
         },
         lambda: 70,
         lambda: 15,
@@ -361,6 +381,16 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.27), (1, 0.27)),
             ),
             "filter_q": expenvelope.Envelope.from_points((0, 11), (1, 11),),
+            "activate_rest": classes.DynamicChoice(
+                (False, True),
+                (
+                    # no rest
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # rest
+                    expenvelope.Envelope.from_points((0, 0.002), (1, 0.002)),
+                ),
+            ),
+            "rest_duration": expenvelope.Envelope.from_points((0, 0.03), (1, 0.03),),
         },
         lambda: 100,
         lambda: 40,
@@ -476,6 +506,16 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.12), (1, 0.12)),
             ),
             "filter_q": expenvelope.Envelope.from_points((0, 12), (1, 12),),
+            "activate_rest": classes.DynamicChoice(
+                (False, True),
+                (
+                    # no rest
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # rest
+                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                ),
+            ),
+            "rest_duration": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
         },
         lambda: 100,
         lambda: 40,
@@ -591,6 +631,16 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.999), (1, 0.999)),
             ),
             "filter_q": expenvelope.Envelope.from_points((0, 14), (1, 14),),
+            "activate_rest": classes.DynamicChoice(
+                (False, True),
+                (
+                    # no rest
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # rest
+                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                ),
+            ),
+            "rest_duration": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
         },
         lambda: 110,
         lambda: 60,

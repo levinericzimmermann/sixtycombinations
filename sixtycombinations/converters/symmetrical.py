@@ -10,6 +10,7 @@ import expenvelope
 
 from mutwo import converters
 from mutwo.events import basic
+from mutwo.events import music
 from mutwo.parameters import pitches
 from mutwo.utilities import tools
 
@@ -38,19 +39,31 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
     # ######################################################## #
 
     @staticmethod
+    def _add_rests(
+        nested_vibrations: basic.SimultaneousEvent[
+            basic.SequentialEvent[classes.Vibration]
+        ],
+    ) -> basic.SimultaneousEvent[basic.SequentialEvent[classes.Vibration]]:
+        for absolute_time, rest in zip(
+            sc_constants.WEATHER.rests.absolute_times, sc_constants.WEATHER.rests
+        ):
+            if rest.is_rest:
+                nested_vibrations.squash_in(absolute_time, rest)
+
+    @staticmethod
     def _cut_vibrations(
         nth_cycle: int, vibrations: basic.SequentialEvent[classes.Vibration],
     ) -> basic.SimultaneousEvent[basic.SequentialEvent[classes.Vibration]]:
         absolute_start_time = sc_constants.ABSOLUTE_START_TIME_PER_GROUP[nth_cycle]
 
         end_point = sc_constants.DURATION - absolute_start_time
-        first_part = vibrations.cut_up(0, end_point, mutate=False)
+        first_part = vibrations.cut_out(0, end_point, mutate=False)
         if absolute_start_time > 0:
             first_part.insert(0, basic.SimpleEvent(absolute_start_time))
 
         vibrations_duration = vibrations.duration
         if vibrations_duration > end_point:
-            second_part = vibrations.cut_up(
+            second_part = vibrations.cut_out(
                 end_point, vibrations_duration, mutate=False
             )
         else:
@@ -60,6 +73,26 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         second_part.append(basic.SimpleEvent(difference))
 
         return basic.SimultaneousEvent([first_part, second_part])
+
+    @staticmethod
+    def _remove_too_short_vibrations(
+        vibrations: basic.SequentialEvent[classes.Vibration],
+    ) -> None:
+        for absolute_time, vibration in zip(vibrations.absolute_times, vibrations):
+            if hasattr(vibration, "pitch"):
+                frequency = vibration.pitch.frequency
+                absolute_position_on_timeline = absolute_time / sc_constants.DURATION
+                if absolute_position_on_timeline < 1:
+                    minimal_number_of_phases = PartialsToVibrationsConverter._get_minimal_number_of_phases(
+                        frequency, absolute_position_on_timeline
+                    )
+                    minimal_duration = (1 / frequency) * minimal_number_of_phases
+                    if vibration.duration < minimal_duration:
+                        vibration.pitch = None
+                elif absolute_position_on_timeline == 1:
+                    vibration.pitch = None
+                else:
+                    raise NotImplementedError()
 
     @staticmethod
     def _find_position_in_frequency_range(frequency: float) -> float:
@@ -289,12 +322,21 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         return absolute_time / sc_constants.DURATION
 
     @staticmethod
-    def _get_minimal_number_of_phases(
+    def _get_minimal_number_of_phases_of_partial(
         partial: classes.Partial, absolute_time: float
     ) -> int:
         absolute_position_on_timeline = PartialsToVibrationsConverter._find_absolute_position_on_timeline(
             partial.nth_cycle, absolute_time
         )
+        return PartialsToVibrationsConverter._get_minimal_number_of_phases(
+            partial.pitch.frequency, absolute_position_on_timeline
+        )
+
+    @staticmethod
+    def _get_minimal_number_of_phases(
+        frequency: float, absolute_position_on_timeline: float
+    ) -> int:
+
         # n_min_phases_range = sc_constants.MINIMAL_PHASES_PER_SOUND_TENDENCY.range_at(
         #     absolute_time
         # )
@@ -308,7 +350,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
                 (n_min_phases_range[1] - n_min_phases_range[0])
                 # use linear (and not logarithmic) interpolation
                 * PartialsToVibrationsConverter._find_linear_position_in_frequency_range(
-                    partial.pitch.frequency
+                    frequency
                 )
             )
         )
@@ -359,7 +401,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         dynamic_curve: int,
     ) -> basic.SequentialEvent[basic.SimpleEvent]:
         """Rhythm is based on activity levels."""
-        n_phases_per_package = PartialsToVibrationsConverter._get_minimal_number_of_phases(
+        n_phases_per_package = PartialsToVibrationsConverter._get_minimal_number_of_phases_of_partial(
             partial, absolute_time
         )
         n_packages = int(n_phases // n_phases_per_package)
@@ -470,7 +512,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         rhythm: basic.SequentialEvent[basic.SimpleEvent],
     ) -> bool:
         duration_of_last_event_in_periods = rhythm[-1].duration / period_duration
-        minimal_number_of_phases = PartialsToVibrationsConverter._get_minimal_number_of_phases(
+        minimal_number_of_phases = PartialsToVibrationsConverter._get_minimal_number_of_phases_of_partial(
             partial, absolute_time
         )
         return minimal_number_of_phases <= duration_of_last_event_in_periods
@@ -815,8 +857,100 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             else:
                 new_sequential_event.append(basic.SimpleEvent(partial.duration))
 
-        cut_up_event = PartialsToVibrationsConverter._cut_vibrations(
+        cut_out_event = PartialsToVibrationsConverter._cut_vibrations(
             nth_cycle, new_sequential_event
         )
 
-        return cut_up_event
+        # PartialsToVibrationsConverter._add_rests(cut_out_event)
+        # [
+        #     PartialsToVibrationsConverter._remove_too_short_vibrations(vibrations)
+        #     for vibrations in cut_out_event
+        # ]
+
+        return cut_out_event
+
+
+class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
+    def __init__(self, metricity_range: tuple = (0.1, 1)):
+        self.activity_levels = tuple(
+            infit.ActivityLevel(nth_level) for nth_level in range(11)
+        )
+        self.metricity_range = metricity_range
+
+    def _convert_partial_to_note_likes(
+        self, absolute_time: float, partial: classes.Partial
+    ):
+        note_likes = basic.SequentialEvent([])
+        # pitch = partial.pitch.move_to_closest_register(
+        #     pitches.JustIntonationPitch("16/1"), mutate=False
+        # )
+        pitch = partial.pitch
+        """
+        attack, sustain, release = (
+            partial.period_duration * n_periods
+            for n_periods in (partial.attack, partial.sustain, partial.release)
+        )
+        while note_likes.duration < sustain:
+            note_likes.append(
+                music.NoteLike(
+                    [pitch], random.uniform(0.5, 2), random.uniform(0.2, 0.5)
+                )
+            )
+
+        difference = note_likes.duration - sustain
+        note_likes.duration -= difference
+
+        note_likes.insert(0, basic.SimpleEvent(attack))
+        note_likes.append(basic.SimpleEvent(release))
+        """
+
+        while note_likes.duration < partial.duration:
+            note_likes.append(
+                music.NoteLike(
+                    [pitch], random.uniform(0.5, 2), random.uniform(0.1, 0.2)
+                )
+            )
+
+        difference = note_likes.duration - partial.duration
+        note_likes.duration -= difference
+
+        return note_likes
+
+    def convert(
+        self, event_to_convert: ConvertableEvent
+    ) -> basic.SimultaneousEvent[basic.SequentialEvent[music.NoteLike]]:
+        new_sequential_event = basic.SequentialEvent([])
+
+        nth_cycle = 0
+
+        for absolute_time, partial in zip(
+            event_to_convert.absolute_times, event_to_convert
+        ):
+
+            # one partial to many NoteLike
+            try:
+                print(partial.nth_partial)
+            except AttributeError:
+                pass
+            if isinstance(partial, classes.Partial) and partial.nth_partial in (1, 3):
+                new_sequential_event.extend(
+                    self._convert_partial_to_note_likes(absolute_time, partial)
+                )
+                nth_cycle = partial.nth_cycle
+
+            # rest to rest
+            else:
+                new_sequential_event.append(basic.SimpleEvent(partial.duration))
+
+        # cut_out_event = PartialsToVibrationsConverter._cut_vibrations(
+        #     nth_cycle, new_sequential_event
+        # )[0]
+
+        # return basic.SimultaneousEvent([cut_out_event])
+
+
+        cut_out_event = PartialsToVibrationsConverter._cut_vibrations(
+            nth_cycle, new_sequential_event
+        )
+
+        return cut_out_event

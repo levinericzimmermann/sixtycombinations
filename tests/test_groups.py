@@ -19,7 +19,7 @@ class HarmoniesTest(unittest.TestCase):
     def test_equal_duration_of_different_cycles(self):
         durations = tuple(self.get_duration_of_cycle(cycle) for cycle in GROUPS)
         for duration0, duration1 in itertools.combinations(durations, 2):
-            self.assertEqual(duration0, duration1)
+            self.assertAlmostEqual(duration0, duration1)
 
     def test_relative_start_times_add_up(self):
         duration = self.get_duration_of_cycle(GROUPS[0])

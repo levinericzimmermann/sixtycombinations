@@ -141,6 +141,60 @@ STATES = (
                 ),
             ),
             "rest_duration": expenvelope.Envelope.from_points((0, 0.008), (1, 0.008),),
+            # ################################################## #
+            #         attributes for synthesizer:                #
+            # ################################################## #
+            "shall_play_octaves0": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves1": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves2": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "density0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.55), (1, 0.55)),
+                expenvelope.Envelope.from_points((0, 0.95), (1, 0.95)),
+            ),
+            "density1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.55), (1, 0.55)),
+                expenvelope.Envelope.from_points((0, 0.85), (1, 0.85)),
+            ),
+            "density2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.55), (1, 0.55)),
+                expenvelope.Envelope.from_points((0, 0.85), (1, 0.85)),
+            ),
+            "volume_range0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                expenvelope.Envelope.from_points((0, 0.85), (1, 0.85)),
+            ),
+            "volume_range1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                expenvelope.Envelope.from_points((0, 0.85), (1, 0.85)),
+            ),
+            "volume_range2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                expenvelope.Envelope.from_points((0, 0.85), (1, 0.85)),
+            ),
         },
         lambda: random.uniform(130, 220),
         lambda: 30,
@@ -266,6 +320,60 @@ STATES = (
                 ),
             ),
             "rest_duration": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
+            # ################################################## #
+            #         attributes for synthesizer:                #
+            # ################################################## #
+            "shall_play_octaves0": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                ),
+            ),
+            "shall_play_octaves1": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves2": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "density0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.55), (1, 0.55)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "density1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.55), (1, 0.55)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "density2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.55), (1, 0.55)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
         },
         lambda: 70,
         lambda: 15,
@@ -391,6 +499,60 @@ STATES = (
                 ),
             ),
             "rest_duration": expenvelope.Envelope.from_points((0, 0.03), (1, 0.03),),
+            # ################################################## #
+            #         attributes for synthesizer:                #
+            # ################################################## #
+            "shall_play_octaves0": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves1": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves2": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "density0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.15), (1, 0.15)),
+                expenvelope.Envelope.from_points((0, 0.45), (1, 0.45)),
+            ),
+            "density1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            ),
+            "density2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
+            ),
+            "volume_range0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+            ),
+            "volume_range1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.02), (1, 0.02)),
+                expenvelope.Envelope.from_points((0, 0.225), (1, 0.225)),
+            ),
+            "volume_range2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.02), (1, 0.02)),
+                expenvelope.Envelope.from_points((0, 0.15), (1, 0.15)),
+            ),
         },
         lambda: 100,
         lambda: 40,
@@ -516,6 +678,60 @@ STATES = (
                 ),
             ),
             "rest_duration": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
+            # ################################################## #
+            #         attributes for synthesizer:                #
+            # ################################################## #
+            "shall_play_octaves0": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves1": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves2": classes.DynamicChoice(
+                (True, False),
+                (
+                    # sine
+                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                    # filtered noise
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "density0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            ),
+            "density1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.15), (1, 0.15)),
+            ),
+            "density2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
+            ),
+            "volume_range0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+            ),
+            "volume_range1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+            ),
+            "volume_range2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
+            ),
         },
         lambda: 100,
         lambda: 40,
@@ -641,6 +857,54 @@ STATES = (
                 ),
             ),
             "rest_duration": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5),),
+            # ################################################## #
+            #         attributes for synthesizer:                #
+            # ################################################## #
+            "shall_play_octaves0": classes.DynamicChoice(
+                (True, False),
+                (
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves1": classes.DynamicChoice(
+                (True, False),
+                (
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "shall_play_octaves2": classes.DynamicChoice(
+                (True, False),
+                (
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                ),
+            ),
+            "density0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.001), (1, 0.001)),
+            ),
+            "density1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0), (1, 0)),
+                expenvelope.Envelope.from_points((0, 0.15), (1, 0.15)),
+            ),
+            "density2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.3), (1, 0.3)),
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+            ),
+            "volume_range0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
+                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
+            ),
+            "volume_range1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+            ),
+            "volume_range2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                expenvelope.Envelope.from_points((0, 0.65), (1, 0.65)),
+            ),
         },
         lambda: 110,
         lambda: 60,

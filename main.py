@@ -94,28 +94,32 @@ def _convert_partials_to_note_likes() -> basic.SimultaneousEvent[
     partials_to_note_likes_converter = (
         sixtycombinations.converters.symmetrical.PartialsToNoteLikesConverter()
     )
-    note_likes = basic.SimultaneousEvent([])
+    note_likes_per_group = basic.SimultaneousEvent([])
     for cycle in sixtycombinations.constants.NESTED_PARTIALS:
         groupA = basic.SimultaneousEvent([])
         groupB = basic.SimultaneousEvent([])
         for speaker in cycle:
-            for nth_num, partials in enumerate(speaker):
-                group = (groupA, groupB)[nth_num]
-                group.extend(partials_to_note_likes_converter.convert(partials))
-        note_likes.append((groupA, groupB))
-    return note_likes
+            for part, partials in zip((groupA, groupB), speaker):
+                part.extend(partials_to_note_likes_converter.convert(partials))
+        note_likes_per_group.append((groupA, groupB))
+    return note_likes_per_group
 
 
 def _render_note_likes_to_midi_files(nested_note_likes: basic.SimultaneousEvent):
     for nth_cycle, cycle in enumerate(nested_note_likes):
-        for nth_group, group in enumerate(cycle):
-            group.duration *= 2  # tempo 120
+        for is_a_or_b, a_or_b in enumerate(cycle):
+            a_or_b.duration *= 2  # due to midi tempo 120
             midi_file_converter = converters.frontends.midi.MidiFileConverter(
-                "instr{}_{}.mid".format(nth_cycle, nth_group),
-                available_midi_channels=tuple(range(6)),
-                distribute_midi_channels=True,
+                "{}/instr{}_{}.mid".format(
+                    sixtycombinations.constants.MIDI_FILES_BUILD_PATH,
+                    nth_cycle,
+                    is_a_or_b,
+                ),
+                available_midi_channels=tuple(range(12)),
+                distribute_midi_channels=False,
+                midi_file_type=1,
             )
-            midi_file_converter.convert(group)
+            midi_file_converter.convert(a_or_b)
 
 
 def _render_vibrations_to_sound_files(nested_vibrations: basic.SimultaneousEvent):
@@ -188,6 +192,8 @@ if __name__ == "__main__":
 
     print("midi - done")
 
+    """
+
     # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
     # logging etc.
@@ -200,3 +206,4 @@ if __name__ == "__main__":
 
     # mix sound files together to one single wav file
     _mix_sound_files(2)
+    """

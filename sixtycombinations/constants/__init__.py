@@ -22,6 +22,7 @@ from .FREQUENCY_RANGE import FREQUENCY_RANGE
 from .RANDOM_SEED import RANDOM_SEED
 from .N_ITERATIONS_OF_HARMONIC_STRUCTURE import N_ITERATIONS_OF_HARMONIC_STRUCTURE
 from .CUT_UP import CUT_UP
+from .SINGING import SINGING_PHRASES
 
 # ######################################################### #
 #                      harmony definition                   #

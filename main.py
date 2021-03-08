@@ -10,6 +10,7 @@ import sox
 
 from mutwo import converters
 from mutwo.events import basic
+from mutwo.parameters import pitches
 
 import sixtycombinations
 
@@ -139,6 +140,42 @@ def _render_vibrations_to_sound_files(nested_vibrations: basic.SimultaneousEvent
         time.sleep(0.5)
 
 
+def _render_singing_phrases_dummies():
+    scale = tuple(
+        pitches.WesternPitch(pitch, concert_pitch=440)
+        for pitch, octave in zip("e f g a b c d e".split(" "), (4, 4, 4, 4, 4, 5, 5, 5))
+    )
+    for nth_phrase, phrase in enumerate(sixtycombinations.constants.SINGING_PHRASES):
+        adjusted_phrase = phrase.copy()
+        for event in adjusted_phrase:
+            if event.pitch is not None:
+                event.pitch = scale[event.pitch]
+            else:
+                event.pitch = pitches.WesternPitch("c", -1, concert_pitch=440)
+
+        isis_score_converter = converters.frontends.isis.IsisScoreConverter(
+            "sixtycombinations/synthesis/isis-score-dummy-phrase-{}.isis".format(
+                nth_phrase
+            ),
+            simple_event_to_pitch=lambda simple_event: simple_event.pitch,
+            global_transposition=5,
+            tempo=95,
+        )
+
+        isis_converter = converters.frontends.isis.IsisConverter(
+            "{}/isis/0-dummy-phrase-{}.wav".format(
+                sixtycombinations.constants.BUILD_PATH, nth_phrase
+            ),
+            isis_score_converter,
+            "-sv EL",  # singing voice alt
+            "-ss eP",  # singing style jG
+            converters.frontends.isis_constants.SILENT_FLAG,
+            remove_score_file=True,
+        )
+
+        isis_converter.convert(adjusted_phrase)
+
+
 def _mix_sound_files(n_channels: int):
     if n_channels == 2:
         csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
@@ -183,6 +220,8 @@ def _mix_sound_files(n_channels: int):
 
 
 if __name__ == "__main__":
+    _render_singing_phrases_dummies()
+
     _convert_groups_to_reaper_marker_file()
 
     # raise ValueError

@@ -23,6 +23,8 @@ from .RANDOM_SEED import RANDOM_SEED
 from .N_ITERATIONS_OF_HARMONIC_STRUCTURE import N_ITERATIONS_OF_HARMONIC_STRUCTURE
 from .CUT_UP import CUT_UP
 from .SINGING import SINGING_PHRASES
+from .DISTRIBUTED_SINGING_PHRASES import DISTRIBUTED_SINGING_PHRASES
+from .SINGER_PER_CYCLE import SINGER_PER_CYCLE
 
 # ######################################################### #
 #                      harmony definition                   #

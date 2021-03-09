@@ -232,7 +232,6 @@ if __name__ == "__main__":
     print("midi - done")
 
     """
-
     # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
     # logging etc.

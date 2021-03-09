@@ -195,6 +195,12 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
                 expenvelope.Envelope.from_points((0, 0.85), (1, 0.85)),
             ),
+            # ################################################## #
+            #         attributes for isis:                       #
+            # ################################################## #
+            "density_singer0": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer1": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer2": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
         },
         lambda: random.uniform(130, 220),
         lambda: 30,
@@ -374,6 +380,12 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.5), (1, 0.4)),
                 expenvelope.Envelope.from_points((0, 1), (1, 1)),
             ),
+            # ################################################## #
+            #         attributes for isis:                       #
+            # ################################################## #
+            "density_singer0": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer1": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer2": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
         },
         lambda: 70,
         lambda: 15,
@@ -553,6 +565,12 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.02), (1, 0.02)),
                 expenvelope.Envelope.from_points((0, 0.15), (1, 0.15)),
             ),
+            # ################################################## #
+            #         attributes for isis:                       #
+            # ################################################## #
+            "density_singer0": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer1": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer2": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
         },
         lambda: 100,
         lambda: 40,
@@ -732,6 +750,12 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0), (1, 0)),
                 expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
             ),
+            # ################################################## #
+            #         attributes for isis:                       #
+            # ################################################## #
+            "density_singer0": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer1": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer2": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
         },
         lambda: 100,
         lambda: 40,
@@ -905,6 +929,12 @@ STATES = (
                 expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
                 expenvelope.Envelope.from_points((0, 0.65), (1, 0.65)),
             ),
+            # ################################################## #
+            #         attributes for isis:                       #
+            # ################################################## #
+            "density_singer0": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer1": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+            "density_singer2": expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
         },
         lambda: 110,
         lambda: 60,

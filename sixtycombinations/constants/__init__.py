@@ -82,23 +82,6 @@ from .NESTED_PARTIALS import NESTED_PARTIALS
 # ######################################################### #
 #          different tendencies and curves:                 #
 # ######################################################### #
-# from .STATIC_TENDENCIES import (
-#     ATTACK_DURATION_TENDENCY,
-#     RELEASE_DURATION_TENDENCY,
-#     GLISSANDO_START_PITCH_CURVE,
-#     GLISSANDO_END_PITCH_CURVE,
-#     GLISSANDO_START_DURATION_TENDENCY,
-#     GLISSANDO_END_DURATION_TENDENCY,
-#     MINIMAL_PHASES_PER_SOUND_TENDENCY,
-#     SPECTRALITY,
-#     DENSITY_TENDENCY,
-#     LOUDNESS_TENDENCY,
-#     SYNTHESIZER_CURVE,
-#     BANDWIDTH,
-#     FILTER_FREQUENCY,
-#     FILTER_Q,
-# )
-
 from .WEATHER import WEATHER
 
 # ###############################################################################

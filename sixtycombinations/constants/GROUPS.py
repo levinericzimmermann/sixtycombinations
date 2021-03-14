@@ -1,4 +1,4 @@
-"""This file implements the class Group and furthermore define all relevant Groups.
+"""This file implements the class Group and furthermore defines all relevant Groups.
 
 One Group is a set of pitches with just relationships.
 """

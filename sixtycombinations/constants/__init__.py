@@ -32,29 +32,9 @@ from .SINGER_PER_CYCLE import SINGER_PER_CYCLE
 from .HARMONIES import HARMONIES
 from .HARMONIES_IN_CORRECT_REGISTER import HARMONIES_IN_CORRECT_REGISTER
 from .REAL_FREQUENCY_RANGE import REAL_FREQUENCY_RANGE
-
-import functools
-import operator
-
-from mutwo.utilities import tools
-
-AVAILABLE_PITCHES = tuple(
-    sorted(
-        tools.uniqify_iterable(
-            p.normalize(mutate=False)
-            for p in functools.reduce(
-                operator.add,
-                (
-                    functools.reduce(operator.add, group)
-                    for group in HARMONIES_IN_CORRECT_REGISTER
-                ),
-            )
-        )
-    )
-)
-
-AVAILABLE_PITCHES_WITH_FUNDAMENTAL_FUNCTION = tuple(
-    p for p in AVAILABLE_PITCHES if all([n <= 0 for n in p.exponents[1:]])
+from .AVAILABLE_PITCHES import AVAILABLE_PITCHES
+from .AVAILABLE_PITCHES_WITH_FUNDAMENTAL_FUNCTION import (
+    AVAILABLE_PITCHES_WITH_FUNDAMENTAL_FUNCTION,
 )
 
 # ######################################################### #
@@ -84,9 +64,15 @@ from .TRANSITION_PHASES_EXPONENT import TRANSITION_PHASES_EXPONENT
 from .TRANSITION_PHASES import TRANSITION_PHASES
 from .MIN_N_PHASES_FOR_SUSTAIN import MIN_N_PHASES_FOR_SUSTAIN
 from .MAX_N_MIN_PHASES_FOR_SUSTAIN import MAX_N_MIN_PHASES_FOR_SUSTAIN
-from .GROUPS import GROUPS
+from .GROUPS import Group, GROUPS
 from .DURATION import DURATION
 from .ABSOLUTE_START_TIME_PER_GROUP import ABSOLUTE_START_TIME_PER_GROUP
+
+# ######################################################### #
+#                        isis stuff                         #
+# ######################################################### #
+from .ISIS_PITCH_GENERATOR_PER_CYCLE import ISIS_PITCH_GENERATOR_PER_CYCLE
+from .ISIS_RHYTHMICAL_GRID_PER_CYCLE import ISIS_RHYTHMICAL_GRID_PER_CYCLE
 
 # ######################################################### #
 #                    composed objects in time               #
@@ -96,7 +82,6 @@ from .NESTED_PARTIALS import NESTED_PARTIALS
 # ######################################################### #
 #          different tendencies and curves:                 #
 # ######################################################### #
-
 from .STATIC_TENDENCIES import (
     ATTACK_DURATION_TENDENCY,
     RELEASE_DURATION_TENDENCY,

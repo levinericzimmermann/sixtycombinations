@@ -32,7 +32,6 @@ for nth_point, absolute_time in enumerate(absolute_time_per_point):
     points_per_phrase[neighbour_phrase].append((absolute_time, 0))
 
 for points in points_per_phrase:
-    print(points)
     if points[0][0] != 0:
         points.insert(0, (0, 0))
 
@@ -41,7 +40,9 @@ for points in points_per_phrase:
 
     points.sort(key=operator.itemgetter(0))
 
-curves = tuple(expenvelope.Envelope.from_points(*points) for points in points_per_phrase)
+curves = tuple(
+    expenvelope.Envelope.from_points(*points) for points in points_per_phrase
+)
 
 DISTRIBUTED_SINGING_PHRASES = classes.DynamicChoice(
     SINGING_PHRASES, curves, random_seed=1995

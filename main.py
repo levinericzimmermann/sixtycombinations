@@ -5,6 +5,7 @@ import operator
 import os
 import threading
 import time
+import typing
 
 import sox
 
@@ -106,6 +107,47 @@ def _convert_partials_to_note_likes() -> basic.SimultaneousEvent[
     return note_likes_per_group
 
 
+def _render_rhythmical_grids_to_sound_files(
+    rhythmical_grids: typing.Tuple[basic.SequentialEvent[basic.SimpleEvent]],
+):
+    for nth_cycle, rhythmical_grid in enumerate(rhythmical_grids):
+        symmetrical_converter = sixtycombinations.converters.symmetrical.RhythmicalGridToAnnotatedNoteLikesConverter(
+            nth_cycle
+        )
+        frontend_converter = sixtycombinations.converters.frontends.AnnotatedNoteLikesToSoundFileConvert(
+            nth_cycle
+        )
+        frontend_converter.convert(symmetrical_converter.convert(rhythmical_grid))
+
+
+def _render_vibrations_to_filtered_isis_files(
+    nested_vibrations: basic.SimultaneousEvent,
+):
+    threads = []
+    for nth_cycle, cycle in enumerate(nested_vibrations):
+        sample_player_event = basic.SimpleEvent(sixtycombinations.constants.DURATION)
+        sample_player_event.path = "{}/{}.wav".format(
+            sixtycombinations.constants.ISIS_FILES_BUILD_PATH, nth_cycle
+        )
+
+        for nth_speaker, speaker_data in enumerate(cycle):
+            adapted_speaker_data = basic.SimultaneousEvent(
+                [basic.SequentialEvent([sample_player_event])] + speaker_data[:]
+            )
+
+            sound_file_converter = sixtycombinations.converters.frontends.VibrationsToFilteredIsisSoundFileConverter(
+                nth_cycle, nth_speaker
+            )
+            thread = threading.Thread(
+                target=lambda: sound_file_converter.convert(adapted_speaker_data)
+            )
+            thread.start()
+            threads.append(thread)
+
+    while any([th.isAlive() for th in threads]):
+        time.sleep(0.5)
+
+
 def _render_note_likes_to_midi_files(nested_note_likes: basic.SimultaneousEvent):
     for nth_cycle, cycle in enumerate(nested_note_likes):
         for is_a_or_b, a_or_b in enumerate(cycle):
@@ -170,7 +212,7 @@ def _render_singing_phrases_dummies():
             "-sv EL",  # singing voice alt
             "-ss eP",  # singing style jG
             converters.frontends.isis_constants.SILENT_FLAG,
-            remove_score_file=True,
+            remove_score_file=False,
         )
 
         isis_converter.convert(adjusted_phrase)
@@ -220,9 +262,10 @@ def _mix_sound_files(n_channels: int):
 
 
 if __name__ == "__main__":
-    _render_singing_phrases_dummies()
-
-    _convert_groups_to_reaper_marker_file()
+    # render dummy files for different singing phrases:
+    # _render_singing_phrases_dummies()
+    # make reaper marker files for better structure in reaper project:
+    # _convert_groups_to_reaper_marker_file()
 
     # raise ValueError
 
@@ -231,17 +274,21 @@ if __name__ == "__main__":
 
     print("midi - done")
 
-    """
+    # _render_rhythmical_grids_to_sound_files(
+    #     sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
+    # )
+
     # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
+    _render_vibrations_to_filtered_isis_files(nested_vibrations)
+
     # logging etc.
     # nested_vibrations.cut_out(0, 122)
     # print(nested_vibrations.duration)
-    _print_density_per_speaker(nested_vibrations)
+    # _print_density_per_speaker(nested_vibrations)
 
     # render vibrations to sound files
-    _render_vibrations_to_sound_files(nested_vibrations)
+    # _render_vibrations_to_sound_files(nested_vibrations)
 
     # mix sound files together to one single wav file
-    _mix_sound_files(2)
-    """
+    # _mix_sound_files(2)

@@ -9,3 +9,5 @@ from .EqualRangeDistribution import EqualRangeDistribution
 from .DynamicChoice import DynamicChoice
 from .State import State
 from .Weather import Weather
+from .AnnotatedNoteLike import AnnotatedNoteLike
+from .Ambitus import Ambitus

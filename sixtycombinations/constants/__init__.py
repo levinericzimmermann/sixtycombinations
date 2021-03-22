@@ -11,6 +11,7 @@ from .LOUDSPEAKER_MONO_FILES_BUILD_PATH_ABSOLUTE import (
 )
 from .MIDI_FILES_BUILD_PATH import MIDI_FILES_BUILD_PATH
 from .ISIS_FILES_BUILD_PATH import ISIS_FILES_BUILD_PATH
+from .FILTERED_ISIS_FILES_BUILD_PATH import FILTERED_ISIS_FILES_BUILD_PATH
 from .MIX_PATH import MIX_PATH
 
 # ######################################################### #
@@ -69,19 +70,17 @@ from .DURATION import DURATION
 from .ABSOLUTE_START_TIME_PER_GROUP import ABSOLUTE_START_TIME_PER_GROUP
 
 # ######################################################### #
+#                    composed objects in time               #
+# ######################################################### #
+from .NESTED_PARTIALS import NESTED_PARTIALS
+
+# ######################################################### #
 #                        isis stuff                         #
 # ######################################################### #
 from .ISIS_PITCH_GENERATOR_PER_CYCLE import ISIS_PITCH_GENERATOR_PER_CYCLE
 from .ISIS_RHYTHMICAL_GRID_PER_CYCLE import ISIS_RHYTHMICAL_GRID_PER_CYCLE
 
 # ######################################################### #
-#                    composed objects in time               #
-# ######################################################### #
-from .NESTED_PARTIALS import NESTED_PARTIALS
-
-# ######################################################### #
 #          different tendencies and curves:                 #
 # ######################################################### #
 from .WEATHER import WEATHER
-
-# ###############################################################################

@@ -1,5 +1,7 @@
 from mutwo.parameters import pitches
 
+from sixtycombinations.classes.Ambitus import Ambitus
+
 
 class IsisVoice(object):
     def __init__(self, ambitus, singing_voice: str, singing_style: str):
@@ -10,9 +12,9 @@ class IsisVoice(object):
 
 SINGER_PER_CYCLE = (
     # tenor male pop singer
-    IsisVoice((pitches.DirectPitch(110), pitches.DirectPitch(300)), "RT", "eP"),
+    IsisVoice(Ambitus(pitches.DirectPitch(110), pitches.DirectPitch(300)), "RT", "eP"),
     # female mezzo-soprano pop singer
-    IsisVoice((pitches.DirectPitch(260), pitches.DirectPitch(600)), "MS", "eP"),
+    IsisVoice(Ambitus(pitches.DirectPitch(260), pitches.DirectPitch(600)), "MS", "eP"),
     # female soprano lyrical singer
-    IsisVoice((pitches.DirectPitch(390), pitches.DirectPitch(1000)), "EL", "eP"),
+    IsisVoice(Ambitus(pitches.DirectPitch(390), pitches.DirectPitch(1000)), "EL", "eP"),
 )

@@ -81,6 +81,7 @@ for nth_cycle, cycle in enumerate(GROUPS):
                 RING_POSITION_TO_LOUDSPEAKER[nth_cycle][nth_loudspeaker],
                 tuple(state[nth_pitch] for state in group.rhythmical_data_per_state),
                 nth_cycle,
+                group.absolute_start_time_per_state
             )
 
             # add partial

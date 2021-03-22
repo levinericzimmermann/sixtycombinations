@@ -46,6 +46,14 @@ class IsisPitchGenerator(object):
         return tuple(points)
 
     @staticmethod
+    def _adjust_points_by_partial_index(
+        points: typing.Tuple[typing.Tuple[float, float]], nth_partial: int
+    ) -> typing.Tuple[typing.Tuple[float, float]]:
+        nth_odd_number = (nth_partial // 2) + 1
+        maxima = 1 / nth_odd_number
+        return tuple((time, weight * maxima) for time, weight in points)
+
+    @staticmethod
     def _extract_pitch_and_envelope_pairs_from_groups(
         nth_cycle: int, groups: typing.Tuple[Group],
     ) -> typing.Tuple[typing.Tuple[pitches.JustIntonationPitch, expenvelope.Envelope]]:
@@ -53,11 +61,15 @@ class IsisPitchGenerator(object):
         for group in groups:
             points = IsisPitchGenerator._make_points_for_group(nth_cycle, group)
             for pitch in group.harmony:
+                nth_partial = int((pitch - group.fundamental).ratio)
+                adjusted_points = IsisPitchGenerator._adjust_points_by_partial_index(
+                    points, nth_partial
+                )
                 pitch = pitch.normalize(mutate=False)
                 if not (pitch.exponents in pitch_and_points_pairs):
                     pitch_and_points_pairs.update({pitch.exponents: (pitch, [])})
 
-                pitch_and_points_pairs[pitch.exponents][1].extend(points)
+                pitch_and_points_pairs[pitch.exponents][1].extend(adjusted_points)
 
         pitch_and_points_pairs = tuple(
             (pitch, sorted(points, key=operator.itemgetter(0)))

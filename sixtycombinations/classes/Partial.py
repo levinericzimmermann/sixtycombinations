@@ -20,6 +20,7 @@ class Partial(basic.SimpleEvent):
         loudspeaker: Loudspeaker,
         rhythmical_data_per_state: typing.Tuple[typing.Tuple[typing.Any]],
         nth_cycle: int,
+        absolute_start_time_per_state: typing.Tuple[float],
     ):
         """info for rhythmical data (see GROUPS.py)
 
@@ -48,6 +49,7 @@ class Partial(basic.SimpleEvent):
         self.loudspeaker = loudspeaker
         self.rhythmical_data_per_state = rhythmical_data_per_state
         self.nth_cycle = nth_cycle
+        self.absolute_start_time_per_state = absolute_start_time_per_state
 
     def __repr__(self):
         return "Partial({})".format(self.nth_partial)

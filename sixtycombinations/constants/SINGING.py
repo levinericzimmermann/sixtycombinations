@@ -1,57 +1,62 @@
 from mutwo.events import basic
 from mutwo.parameters import volumes
 
-# duration, pitch, volume, consonants, vowel
+# TODO(write pitch in absolute cent values and let
+# program calculate the difference. For manual composing
+# is easier to think in absolute values)
+
+# VAR:   duration, pitch, volume, consonants, vowel
+# TYPES: beats, cent distance to previous pitch, loudness, tuple(str), str
 RAW_PHRASES = (
     # Mors omnia solvit.
     (
         # Mors
-        (1.5, 0, 1, ("m",), "o"),
-        (0.5, None, 1, ("R", "s"), "_"),
+        (3, 0, 1, ("m",), "o"),
+        (1, None, 1, ("R", "s"), "_"),
         # omnia
-        (1, 0, 1, tuple([]), "o"),
-        (2, 1, 1, ("m", "n"), "i"),
-        (1, 0, 1, tuple([]), "a"),
-        (0.5, None, 1, tuple([]), "_"),
+        (2, 0, 1, tuple([]), "o"),
+        (4, 200, 1, ("m", "n"), "i"),
+        (2, -200, 1, tuple([]), "a"),
+        (1, None, 1, tuple([]), "_"),
         # solvit
-        (1, 2, 1, ("s",), "o"),
-        (1, 1, 1, tuple([]), "o"),
-        (1.5, 0, 0.5, ("l", "v",), "i"),
-        (0.5, None, 0, ("t",), "_"),
+        (2, 300, 1, ("s",), "o"),
+        (2, -200, 1, tuple([]), "o"),
+        (3, -100, 0.5, ("l", "v",), "i"),
+        (1, None, 0, ("t",), "_"),
     ),
     # Nascentes morimur,
     (
         # Nascentes
-        (1, 0, 1, ("n",), "a"),
-        (2, 0, 1, ("s", "k",), "e"),
-        (1, 0, 1, ("n", "t",), "e"),
-        (1, None, 0, ("s",), "_"),
+        (2, 0, 1, ("n",), "a"),
+        (4, 0, 1, ("s", "k",), "e"),
+        (2, 0, 1, ("n", "t",), "e"),
+        (2, None, 0, ("s",), "_"),
         # morimur
-        (1, 1, 1, ("m",), "o"),
-        (2, 1, 1, ("R",), "i"),
-        (1, 0, 1, tuple([]), "i"),
-        (1, 0, 1, ("m",), "u"),
-        (1, None, 0, ("R",), "_"),
+        (2, 100, 1, ("m",), "o"),
+        (4, 0, 1, ("R",), "i"),
+        (2, -100, 1, tuple([]), "i"),
+        (2, 0, 1, ("m",), "u"),
+        (2, None, 0, ("R",), "_"),
     ),
     # Mors ultima linea rerum.
     (
         # Mors
-        (1.5, 0, 1, ("m",), "o"),
-        (0.5, None, 0, ("R", "s"), "_"),
+        (3, 0, 1, ("m",), "o"),
+        (1, None, 0, ("R", "s"), "_"),
         # ultima
-        (1, 0, 1, tuple([]), "u"),
-        (1.5, 1, 1, ("l", "t",), "i"),
-        (1, 0, 1, ("m",), "a"),
-        (0.5, None, 0, tuple([]), "_"),
+        (2, 0, 1, tuple([]), "u"),
+        (3, 200, 1, ("l", "t",), "i"),
+        (2, -200, 1, ("m",), "a"),
+        (1, None, 0, tuple([]), "_"),
         # linea
-        (1, 2, 1, ("l",), "i"),
-        (2, 1, 1, ("n",), "e"),
-        (1, 0, 1, tuple([]), "a"),
-        (0.5, None, 0, tuple([]), "_"),
+        (2, 300, 1, ("l",), "i"),
+        (4, -100, 1, ("n",), "e"),
+        (2, -200, 1, tuple([]), "a"),
+        (1, None, 0, tuple([]), "_"),
         # rerum
-        (2, 1, 1, ("R",), "e"),
-        (1, 0, 1, ("R",), "u"),
-        (1, None, 0, ("m",), "_"),
+        (4, 0, 1, ("R",), "e"),
+        (2, -100, 1, ("R",), "u"),
+        (2, None, 0, ("m",), "_"),
     ),
 )
 

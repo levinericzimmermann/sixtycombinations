@@ -6,6 +6,8 @@ import operator
 import random
 import typing
 
+from scipy import signal
+
 import expenvelope
 import numpy as np
 
@@ -14,6 +16,9 @@ from mutwo.events import basic
 from mutwo.events import music
 from mutwo.generators import toussaint
 from mutwo.parameters import pitches
+
+from mutwo import parameters
+
 from mutwo.utilities import prime_factors
 from mutwo.utilities import tools
 
@@ -1226,3 +1231,260 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
             )
 
         return simultaneous_event
+
+
+Cents = typing.NewType("Cents", float)
+
+
+class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
+    def __init__(self, nth_cycle: int, pitch_tolerance: Cents = 60):
+        self._nth_cycle = nth_cycle
+        self._singer = sc_constants.SINGER_PER_CYCLE[nth_cycle]
+        self._pitch_generator = sc_constants.ISIS_PITCH_GENERATOR_PER_CYCLE[nth_cycle]
+
+        self._pitch_tolerance = math.ceil(pitch_tolerance)
+        self._gaussian_window = signal.gaussian(
+            self._pitch_tolerance * 2, self._pitch_tolerance / 3
+        )[self._pitch_tolerance :]
+
+    # ######################################################## #
+    #               private static methods                     #
+    # ######################################################## #
+
+    @staticmethod
+    def _find_previous_pitch(
+        new_annotated_notes_likes: typing.List[
+            typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+        ],
+    ) -> typing.Union[parameters.abc.Pitch, None]:
+        if new_annotated_notes_likes:
+            for annotated_note_like in reversed(new_annotated_notes_likes):
+                try:
+                    pitch_or_pitches = annotated_note_like.pitch_or_pitches
+                except AttributeError:
+                    pitch_or_pitches = None
+
+                if pitch_or_pitches:
+                    if isinstance(pitch_or_pitches[0], pitches.JustIntonationPitch):
+                        return pitch_or_pitches[0]
+
+        return None
+
+    # ######################################################## #
+    #                     private methods                      #
+    # ######################################################## #
+
+    def _calculate_pitch_from_cycle_data(
+        self,
+        singing_event: basic.SimpleEvent,
+        absolute_position_on_timeline,
+        previous_pitch: typing.Union[parameters.abc.Pitch, None],
+    ) -> typing.Union[parameters.abc.Pitch, None]:
+        pitch_weight_pairs = self._pitch_generator(absolute_position_on_timeline)
+
+        desired_distance_to_previous_pitch = singing_event.pitch
+
+        # distribute pitches on singer ambitus and calculate likelihood of each
+        # pitch, depending on the previous pitch and the desired distance
+        pitch_candidates, weight_candidates = [[], []]
+        for pitch, weight in pitch_weight_pairs:
+            pitch_variants = self._singer.ambitus.find_all_pitch_variants(pitch)
+            if pitch_variants:
+                for pitch_variant in pitch_variants:
+                    if previous_pitch:
+                        difference_to_previous_pitch = (
+                            pitch_variant - previous_pitch
+                        ).cents
+                        difference_to_desired_distance = int(
+                            abs(
+                                difference_to_previous_pitch
+                                - desired_distance_to_previous_pitch
+                            )
+                        )
+                        if difference_to_desired_distance > self._pitch_tolerance:
+                            factor = 0
+                        else:
+                            factor = self._gaussian_window[
+                                difference_to_desired_distance
+                            ]
+
+                        weight *= factor
+
+                    if weight > 0:
+                        pitch_candidates.append(pitch_variant)
+                        weight_candidates.append(weight)
+
+        # make random choice
+        choosen_pitch = random.choices(pitch_candidates, weight_candidates, k=1)[0]
+        return choosen_pitch
+
+    def _find_pitch(
+        self,
+        singing_event: basic.SimpleEvent,
+        absolute_position_on_timeline: float,
+        previous_pitch: typing.Union[parameters.abc.Pitch, None],
+    ) -> typing.Union[parameters.abc.Pitch, None]:
+        if singing_event.pitch is None:
+            if singing_event.consonants:
+                # make midi-pitch == 0
+                pitch = pitches.WesternPitch(
+                    "c",
+                    -1,
+                    concert_pitch=440,
+                    concert_pitch_octave=4,
+                    concert_pitch_pitch_class=9,
+                )
+            else:
+                # make no pitch (rest)
+                pitch = None
+        else:
+            pitch = self._calculate_pitch_from_cycle_data(
+                singing_event, absolute_position_on_timeline, previous_pitch
+            )
+
+        return pitch
+
+    def _process_singing_event(
+        self,
+        singing_event: basic.SimpleEvent,
+        absolute_position_on_timeline: float,
+        previous_pitch: typing.Union[parameters.abc.Pitch, None],
+        duration: float,
+    ) -> classes.AnnotatedNoteLike:
+        previous_pitch = 0
+        pitch = self._find_pitch(
+            singing_event, absolute_position_on_timeline, previous_pitch
+        )
+
+        if pitch is None:
+            annotated_note_like = basic.SimpleEvent(duration)
+        else:
+            annotated_note_like = classes.AnnotatedNoteLike(
+                pitch,
+                duration,
+                singing_event.volume,
+                singing_event.consonants,
+                singing_event.vowel,
+            )
+
+        return annotated_note_like
+
+    def _add_phrase_to_annotated_note_likes(
+        self,
+        singing_phrase: basic.SequentialEvent[basic.SimpleEvent],
+        absolute_times: typing.Tuple[float],
+        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
+        annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
+    ) -> None:
+        new_annotated_notes_likes = []
+        absolute_times_of_phrase = singing_phrase.absolute_times
+        for singing_event, start, end in zip(
+            singing_phrase,
+            absolute_times_of_phrase,
+            absolute_times_of_phrase[1:] + (singing_phrase.duration,),
+        ):
+            absolute_position_on_timeline = PartialsToVibrationsConverter._find_absolute_position_on_timeline(
+                0, absolute_times[start]
+            )
+            duration_of_event = rhythmical_grid[start:end].duration
+            previous_pitch = RhythmicalGridToAnnotatedNoteLikesConverter._find_previous_pitch(
+                new_annotated_notes_likes
+            )
+            annotated_note_like = self._process_singing_event(
+                singing_event,
+                absolute_position_on_timeline,
+                previous_pitch,
+                duration_of_event,
+            )
+            new_annotated_notes_likes.append(annotated_note_like)
+
+        annotated_note_likes.extend(new_annotated_notes_likes)
+
+    def _make_phrase(
+        self,
+        absolute_position_on_timeline: float,
+        absolute_times: typing.Tuple[float],
+        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
+        annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
+    ) -> typing.Tuple[typing.Tuple[float], basic.SequentialEvent[basic.SimpleEvent]]:
+        singing_phrase = sc_constants.DISTRIBUTED_SINGING_PHRASES.gamble_at(
+            absolute_position_on_timeline
+        )
+
+        # make sure there are enough beats left to play the complete phrase
+        n_beats_in_phrase = singing_phrase.duration
+        if n_beats_in_phrase <= len(rhythmical_grid):
+            self._add_phrase_to_annotated_note_likes(
+                singing_phrase, absolute_times, rhythmical_grid, annotated_note_likes,
+            )
+
+            return (
+                absolute_times[n_beats_in_phrase:],
+                rhythmical_grid[n_beats_in_phrase:],
+            )
+
+        else:
+            return self._make_rest(
+                len(rhythmical_grid),
+                absolute_times,
+                rhythmical_grid,
+                annotated_note_likes,
+            )
+
+    def _make_rest(
+        self,
+        n_beats: int,
+        absolute_times: typing.Tuple[float],
+        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
+        annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
+    ) -> typing.Tuple[typing.Tuple[float], basic.SequentialEvent[basic.SimpleEvent]]:
+        annotated_note_likes.append(
+            basic.SimpleEvent(rhythmical_grid[:n_beats].duration)
+        )
+        return absolute_times[n_beats:], rhythmical_grid[n_beats:]
+
+    def _process_rhythm(
+        self,
+        absolute_times: typing.Tuple[float],
+        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
+        annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
+    ) -> typing.Tuple[typing.Tuple[float], basic.SequentialEvent[basic.SimpleEvent]]:
+        # always use cycle = 0 for _find_absolute_position_on_timeline, because
+        # the time is already adjusted depending on the cycle:
+        absolute_position_on_timeline = PartialsToVibrationsConverter._find_absolute_position_on_timeline(
+            0, absolute_times[0]
+        )
+        likelihood = sc_constants.WEATHER.get_value_of_at(
+            "density_singer{}".format(self._nth_cycle), absolute_position_on_timeline
+        )
+        # make phrase
+        if random.random() < likelihood:
+            return self._make_phrase(
+                absolute_position_on_timeline,
+                absolute_times,
+                rhythmical_grid,
+                annotated_note_likes,
+            )
+
+        # make rest
+        else:
+            return self._make_rest(
+                1, absolute_times, rhythmical_grid, annotated_note_likes
+            )
+
+    # ######################################################## #
+    #                        public api                        #
+    # ######################################################## #
+
+    def convert(
+        self, rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent]
+    ) -> basic.SequentialEvent[classes.AnnotatedNoteLike]:
+
+        absolute_times = rhythmical_grid.absolute_times
+        annotated_note_likes = basic.SequentialEvent([])
+        while absolute_times and rhythmical_grid:
+            absolute_times, rhythmical_grid = self._process_rhythm(
+                absolute_times, rhythmical_grid, annotated_note_likes
+            )
+
+        return annotated_note_likes

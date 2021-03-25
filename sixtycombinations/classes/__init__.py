@@ -11,3 +11,4 @@ from .State import State
 from .Weather import Weather
 from .AnnotatedNoteLike import AnnotatedNoteLike
 from .Ambitus import Ambitus
+from .ContinousEnvelope import *

@@ -275,6 +275,9 @@ class VibrationsToFilteredIsisSoundFileConverter(converters.abc.Converter):
                 lambda vibration: vibration.glissando_duration_at_end
                 * vibration.duration
             ),
+            p12=return_none_for_wrong_type(
+                lambda vibration: vibration.bandwidth_for_singer
+            ),
         )
 
     # ######################################################## #

@@ -18,6 +18,7 @@ class Vibration(basic.SimpleEvent):
         glissando_pitch_at_end: pitches.JustIntonationPitch,
         glissando_duration_at_start: float,
         glissando_duration_at_end: float,
+        bandwidth_for_singer: float,
     ):
         super().__init__(duration)
         self.pitch = pitch
@@ -41,6 +42,7 @@ class Vibration(basic.SimpleEvent):
         ) = self._adjust_envelope_durations(
             glissando_duration_at_start, glissando_duration_at_end, duration
         )
+        self.bandwidth_for_singer = bandwidth_for_singer
 
     @staticmethod
     def _adjust_envelope_durations(

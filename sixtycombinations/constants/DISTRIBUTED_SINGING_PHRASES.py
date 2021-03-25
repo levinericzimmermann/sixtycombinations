@@ -8,7 +8,7 @@ from sixtycombinations.constants import SINGING_PHRASES
 
 # for value > 1: longer transition than stable state, for value < 1: longer stable state
 n_phrases = len(SINGING_PHRASES)
-TRANSITION_FACTOR = 0.8
+TRANSITION_FACTOR = 0.7
 DURATION_OF_STABLE_STATE = (1 / n_phrases) / (1 + TRANSITION_FACTOR)
 
 assert (

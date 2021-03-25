@@ -183,15 +183,11 @@ def _render_vibrations_to_sound_files(nested_vibrations: basic.SimultaneousEvent
 
 
 def _render_singing_phrases_dummies():
-    scale = tuple(
-        pitches.WesternPitch(pitch, concert_pitch=440)
-        for pitch, octave in zip("e f g a b c d e".split(" "), (4, 4, 4, 4, 4, 5, 5, 5))
-    )
     for nth_phrase, phrase in enumerate(sixtycombinations.constants.SINGING_PHRASES):
         adjusted_phrase = phrase.copy()
         for event in adjusted_phrase:
             if event.pitch is not None:
-                event.pitch = scale[event.pitch]
+                event.pitch = pitches.DirectPitch(float(pitches.DirectPitch.cents_to_ratio(event.pitch) * 320))
             else:
                 event.pitch = pitches.WesternPitch("c", -1, concert_pitch=440)
 
@@ -210,7 +206,8 @@ def _render_singing_phrases_dummies():
             ),
             isis_score_converter,
             "-sv EL",  # singing voice alt
-            "-ss eP",  # singing style jG
+            "-ss jG",  # singing style jG
+            # "-pls meta",
             converters.frontends.isis_constants.SILENT_FLAG,
             remove_score_file=False,
         )
@@ -274,9 +271,9 @@ if __name__ == "__main__":
 
     print("midi - done")
 
-    # _render_rhythmical_grids_to_sound_files(
-    #     sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
-    # )
+    _render_rhythmical_grids_to_sound_files(
+        sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
+    )
 
     # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)

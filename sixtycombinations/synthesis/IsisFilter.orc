@@ -26,7 +26,7 @@ instr 2
     ifreqStop = p9
     iglissandoDuration0 = p10
     iglissandoDuration1 = p11
-    ibandwidth = 17
+    ibandwidth = p12
 
     kfreq linseg ifreqStart, iglissandoDuration0, ifreq, idur - (iglissandoDuration0 + iglissandoDuration1), ifreq, iglissandoDuration1, ifreqStop
 

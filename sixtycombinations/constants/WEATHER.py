@@ -201,6 +201,29 @@ STATES = (
             "density_singer0": expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
             "density_singer1": expenvelope.Envelope.from_points((0, 0.08), (1, 0.08)),
             "density_singer2": expenvelope.Envelope.from_points((0, 0.07), (1, 0.07)),
+            "bandwidth_singer0": expenvelope.Envelope.from_points((0, 11), (1, 11)),
+            "bandwidth_singer1": expenvelope.Envelope.from_points((0, 7), (1, 7)),
+            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 5), (1, 5)),
+            "volume_range_singer0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range_singer1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range_singer2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "isis_rhythmical_division": classes.DynamicChoice(
+                (1, 2, 4),
+                (
+                    expenvelope.Envelope.from_points((0, 0.75), (1, 0.75)),
+                    expenvelope.Envelope.from_points((0, 0.8), (1, 0.8)),
+                    expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                ),
+            )
         },
         lambda: random.uniform(130, 220),
         lambda: 30,
@@ -386,6 +409,30 @@ STATES = (
             "density_singer0": expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
             "density_singer1": expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
             "density_singer2": expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+            "bandwidth_singer0": expenvelope.Envelope.from_points((0, 11), (1, 11)),
+            "bandwidth_singer1": expenvelope.Envelope.from_points((0, 7), (1, 7)),
+            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 5), (1, 5)),
+            "volume_range_singer0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                expenvelope.Envelope.from_points((0, 2), (1, 2)),
+            ),
+            "volume_range_singer1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range_singer2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "isis_rhythmical_division": classes.DynamicChoice(
+                (1, 2, 4),
+                (
+                    expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                    expenvelope.Envelope.from_points((0, 0.8), (1, 0.8)),
+                    expenvelope.Envelope.from_points((0, 0.7), (1, 0.7)),
+                ),
+            )
+
         },
         lambda: 70,
         lambda: 15,
@@ -571,6 +618,29 @@ STATES = (
             "density_singer0": expenvelope.Envelope.from_points((0, 0.09), (1, 0.09)),
             "density_singer1": expenvelope.Envelope.from_points((0, 0.03), (1, 0.03)),
             "density_singer2": expenvelope.Envelope.from_points((0, 0), (1, 0)),
+            "bandwidth_singer0": expenvelope.Envelope.from_points((0, 6), (1, 6)),
+            "bandwidth_singer1": expenvelope.Envelope.from_points((0, 3), (1, 3)),
+            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            "volume_range_singer0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.4), (1, 0.4)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "volume_range_singer1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+            ),
+            "volume_range_singer2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                expenvelope.Envelope.from_points((0, 0.3), (1, 0.3)),
+            ),
+            "isis_rhythmical_division": classes.DynamicChoice(
+                (1, 2, 4),
+                (
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+                    expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                ),
+            )
         },
         lambda: 100,
         lambda: 40,
@@ -756,6 +826,29 @@ STATES = (
             "density_singer0": expenvelope.Envelope.from_points((0, 0.03), (1, 0.03)),
             "density_singer1": expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
             "density_singer2": expenvelope.Envelope.from_points((0, 0), (1, 0)),
+            "bandwidth_singer0": expenvelope.Envelope.from_points((0, 6), (1, 6)),
+            "bandwidth_singer1": expenvelope.Envelope.from_points((0, 3), (1, 3)),
+            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+            "volume_range_singer0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+            ),
+            "volume_range_singer1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+            ),
+            "volume_range_singer2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+            ),
+            "isis_rhythmical_division": classes.DynamicChoice(
+                (1, 2, 4),
+                (
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+                    expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                ),
+            )
         },
         lambda: 100,
         lambda: 40,
@@ -935,6 +1028,29 @@ STATES = (
             "density_singer0": expenvelope.Envelope.from_points((0, 0), (1, 0)),
             "density_singer1": expenvelope.Envelope.from_points((0, 0.01), (1, 0.01)),
             "density_singer2": expenvelope.Envelope.from_points((0, 0.08), (1, 0.08)),
+            "bandwidth_singer0": expenvelope.Envelope.from_points((0, 3), (1, 3)),
+            "bandwidth_singer1": expenvelope.Envelope.from_points((0, 3), (1, 3)),
+            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 5), (1, 5)),
+            "volume_range_singer0": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
+                expenvelope.Envelope.from_points((0, 0.2), (1, 0.3)),
+            ),
+            "volume_range_singer1": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+            ),
+            "volume_range_singer2": classes.Tendency(
+                expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+                expenvelope.Envelope.from_points((0, 1), (1, 1)),
+            ),
+            "isis_rhythmical_division": classes.DynamicChoice(
+                (1, 2, 4),
+                (
+                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
+                    expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
+                    expenvelope.Envelope.from_points((0, 0.25), (1, 0.25)),
+                ),
+            )
         },
         lambda: 110,
         lambda: 60,

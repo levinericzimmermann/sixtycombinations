@@ -771,6 +771,10 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         glissando_end_duration = sc_constants.WEATHER.get_value_of_at(
             "glissando_end_duration", absolute_position_on_timeline
         )
+        bandwidth_for_singer = sc_constants.get_value_of_at(
+            "bandwidth_singer{}".format(partial.nth_cycle),
+            absolute_position_on_timeline,
+        )
         return classes.Vibration(
             partial.pitch,
             duration,
@@ -783,6 +787,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             partial.pitch + glissando_end_pitch,
             glissando_start_duration,
             glissando_end_duration,
+            bandwidth_for_singer,
         )
 
     def _make_vibrations(
@@ -1145,7 +1150,7 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
     ) -> basic.SimultaneousEvent[basic.SequentialEvent[basic.SimpleEvent]]:
         (
             n_repetitions,
-            n_periods_per_repetition,
+            _,  # n_periods_per_repetition isn't used
             rhythm,
             _,  # indispensability isn't used
         ) = partial.rhythmical_data_per_state[state_index]
@@ -1252,6 +1257,18 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
     # ######################################################## #
 
     @staticmethod
+    def _make_rest(
+        n_beats: int,
+        absolute_times: typing.Tuple[float],
+        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
+        annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
+    ) -> typing.Tuple[typing.Tuple[float], basic.SequentialEvent[basic.SimpleEvent]]:
+        annotated_note_likes.append(
+            basic.SimpleEvent(rhythmical_grid[:n_beats].duration)
+        )
+        return absolute_times[n_beats:], rhythmical_grid[n_beats:]
+
+    @staticmethod
     def _find_previous_pitch(
         new_annotated_notes_likes: typing.List[
             typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
@@ -1270,6 +1287,30 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
 
         return None
 
+    @staticmethod
+    def _adjust_rhythmical_data(
+        absolute_times: typing.Tuple[float],
+        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
+        rhythmical_division: int,
+        n_used_beats: int,
+    ) -> typing.Tuple[basic.SequentialEvent[basic.SimpleEvent], typing.Tuple[float]]:
+        adjusted_rhythmical_grid = basic.SequentialEvent([])
+
+        for beat in rhythmical_grid[:n_used_beats]:
+            size_per_beat = beat.duration / rhythmical_division
+            [
+                adjusted_rhythmical_grid.append(basic.SimpleEvent(size_per_beat))
+                for _ in range(rhythmical_division)
+            ]
+
+        adjusted_absolute_times = tuple(
+            tools.accumulate_from_n(
+                adjusted_rhythmical_grid.get_parameter("duration"), absolute_times[0]
+            )
+        )
+
+        return adjusted_rhythmical_grid, adjusted_absolute_times
+
     # ######################################################## #
     #                     private methods                      #
     # ######################################################## #
@@ -1282,7 +1323,7 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
     ) -> typing.Union[parameters.abc.Pitch, None]:
         pitch_weight_pairs = self._pitch_generator(absolute_position_on_timeline)
 
-        desired_distance_to_previous_pitch = singing_event.pitch
+        desired_distance_to_previous_pitch = singing_event.pitch_distance
 
         # distribute pitches on singer ambitus and calculate likelihood of each
         # pitch, depending on the previous pitch and the desired distance
@@ -1344,6 +1385,21 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
 
         return pitch
 
+    def _find_volume(
+        self, singing_event: basic.SimpleEvent, absolute_position_on_timeline: float
+    ) -> float:
+        if singing_event.volume.amplitude == 0:
+            return singing_event.volume
+
+        volume_range = sc_constants.WEATHER.get_range_of_at(
+            "volume_range_singer{}".format(self._nth_cycle),
+            absolute_position_on_timeline,
+        )
+        difference = volume_range[1] - volume_range[0]
+        return parameters.volumes.DirectVolume(
+            volume_range[0] + (difference * singing_event.volume.amplitude)
+        )
+
     def _process_singing_event(
         self,
         singing_event: basic.SimpleEvent,
@@ -1362,7 +1418,7 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
             annotated_note_like = classes.AnnotatedNoteLike(
                 pitch,
                 duration,
-                singing_event.volume,
+                self._find_volume(singing_event, absolute_position_on_timeline),
                 singing_event.consonants,
                 singing_event.vowel,
             )
@@ -1375,7 +1431,16 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
         absolute_times: typing.Tuple[float],
         rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
         annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
+        rhythmical_division: int,
+        n_used_beats: int,
     ) -> None:
+        (
+            adjusted_rhythmical_grid,
+            adjusted_absolute_times,
+        ) = RhythmicalGridToAnnotatedNoteLikesConverter._adjust_rhythmical_data(
+            absolute_times, rhythmical_grid, rhythmical_division, n_used_beats
+        )
+
         new_annotated_notes_likes = []
         absolute_times_of_phrase = singing_phrase.absolute_times
         for singing_event, start, end in zip(
@@ -1384,9 +1449,9 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
             absolute_times_of_phrase[1:] + (singing_phrase.duration,),
         ):
             absolute_position_on_timeline = PartialsToVibrationsConverter._find_absolute_position_on_timeline(
-                0, absolute_times[start]
+                0, adjusted_absolute_times[start]
             )
-            duration_of_event = rhythmical_grid[start:end].duration
+            duration_of_event = adjusted_rhythmical_grid[start:end].duration
             previous_pitch = RhythmicalGridToAnnotatedNoteLikesConverter._find_previous_pitch(
                 new_annotated_notes_likes
             )
@@ -1400,6 +1465,12 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
 
         annotated_note_likes.extend(new_annotated_notes_likes)
 
+        remainder = (n_used_beats * rhythmical_division) % singing_phrase.duration
+        if remainder:
+            annotated_note_likes.append(
+                basic.SimpleEvent(adjusted_rhythmical_grid[-remainder:].duration)
+            )
+
     def _make_phrase(
         self,
         absolute_position_on_timeline: float,
@@ -1412,15 +1483,25 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
         )
 
         # make sure there are enough beats left to play the complete phrase
+        rhythmical_division = sc_constants.WEATHER.get_value_of_at(
+            "isis_rhythmical_division", absolute_position_on_timeline
+        )
         n_beats_in_phrase = singing_phrase.duration
-        if n_beats_in_phrase <= len(rhythmical_grid):
+        if n_beats_in_phrase <= len(rhythmical_grid) * rhythmical_division:
+            n_used_beats = math.ceil(n_beats_in_phrase / rhythmical_division)
+
             self._add_phrase_to_annotated_note_likes(
-                singing_phrase, absolute_times, rhythmical_grid, annotated_note_likes,
+                singing_phrase,
+                absolute_times,
+                rhythmical_grid,
+                annotated_note_likes,
+                rhythmical_division,
+                n_used_beats,
             )
 
             return (
-                absolute_times[n_beats_in_phrase:],
-                rhythmical_grid[n_beats_in_phrase:],
+                absolute_times[n_used_beats:],
+                rhythmical_grid[n_used_beats:],
             )
 
         else:
@@ -1430,18 +1511,6 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
                 rhythmical_grid,
                 annotated_note_likes,
             )
-
-    def _make_rest(
-        self,
-        n_beats: int,
-        absolute_times: typing.Tuple[float],
-        rhythmical_grid: basic.SequentialEvent[basic.SimpleEvent],
-        annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike],
-    ) -> typing.Tuple[typing.Tuple[float], basic.SequentialEvent[basic.SimpleEvent]]:
-        annotated_note_likes.append(
-            basic.SimpleEvent(rhythmical_grid[:n_beats].duration)
-        )
-        return absolute_times[n_beats:], rhythmical_grid[n_beats:]
 
     def _process_rhythm(
         self,
@@ -1468,7 +1537,7 @@ class RhythmicalGridToAnnotatedNoteLikesConverter(converters.abc.Converter):
 
         # make rest
         else:
-            return self._make_rest(
+            return RhythmicalGridToAnnotatedNoteLikesConverter._make_rest(
                 1, absolute_times, rhythmical_grid, annotated_note_likes
             )
 

@@ -608,7 +608,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
 
         (
             n_repetitions,
-            n_periods_per_beat,
+            _,
             rhythm_cycle,
             indispensability_per_beat,
         ) = rhythmical_data
@@ -771,7 +771,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         glissando_end_duration = sc_constants.WEATHER.get_value_of_at(
             "glissando_end_duration", absolute_position_on_timeline
         )
-        bandwidth_for_singer = sc_constants.get_value_of_at(
+        bandwidth_for_singer = sc_constants.WEATHER.get_value_of_at(
             "bandwidth_singer{}".format(partial.nth_cycle),
             absolute_position_on_timeline,
         )
@@ -956,7 +956,6 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
 
     def _generate_events_with_octave_shifted_partner(
         self,
-        absolute_position_on_timeline: float,
         partial: classes.Partial,
         period_size: int,
         duration_per_beat: float,
@@ -1022,7 +1021,6 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
 
     def _generate_events_without_octave_shifted_partner(
         self,
-        absolute_position_on_timeline: float,
         partial: classes.Partial,
         period_size: int,
         duration_per_beat: float,
@@ -1079,7 +1077,6 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
 
         if shall_play_octaves:
             events = self._generate_events_with_octave_shifted_partner(
-                absolute_position_on_timeline,
                 partial,
                 period_size,
                 duration_per_beat,
@@ -1088,7 +1085,6 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
 
         else:
             events = self._generate_events_without_octave_shifted_partner(
-                absolute_position_on_timeline,
                 partial,
                 period_size,
                 duration_per_beat,

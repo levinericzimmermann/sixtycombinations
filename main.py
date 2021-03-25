@@ -271,9 +271,9 @@ if __name__ == "__main__":
 
     print("midi - done")
 
-    _render_rhythmical_grids_to_sound_files(
-        sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
-    )
+    # _render_rhythmical_grids_to_sound_files(
+    #     sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
+    # )
 
     # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)

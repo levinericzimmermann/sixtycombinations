@@ -1,5 +1,10 @@
+import functools
+import operator
+
 from mutwo.events import basic
 from mutwo.parameters import volumes
+
+from sixtycombinations.constants import N_ITERATIONS_OF_ISIS_PHRASES
 
 # VAR:   duration, pitch, volume, consonants, vowel
 # TYPES: beats, cent distance to previous pitch, loudness, tuple(str), str
@@ -83,8 +88,7 @@ RAW_PHRASES = (
         (2, 0, 1, tuple([]), "i"),
         (1, 0, 1, ("r",), "u"),
         (1, None, 0, ("n", "t"), "_"),
-
-    )
+    ),
     # Et redit ad nihilum quod fuit ante nihil.
     (
         # Et
@@ -116,7 +120,7 @@ RAW_PHRASES = (
         # nihil
         (1, 200, 1, ("n",), "i"),
         (1, 0, 1, ("H",), "i"),
-        (1, None, 0, ("l"), "_"),
+        (1, None, 0, ("l",), "_"),
     ),
 )
 
@@ -147,3 +151,9 @@ for raw_phrase in RAW_PHRASES:
             event.pitch_distance = 0
 
     SINGING_PHRASES.append(converted_phrase)
+
+
+SINGING_PHRASES = tuple(
+    functools.reduce(operator.add, tuple(phrase.copy() for phrase in SINGING_PHRASES))
+    for _ in range(N_ITERATIONS_OF_ISIS_PHRASES)
+)

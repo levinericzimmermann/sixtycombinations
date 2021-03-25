@@ -147,27 +147,27 @@ STATES = (
             "shall_play_octaves0": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
-                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # yes
+                    expenvelope.Envelope.from_points((0, 0.3), (1, 0.3)),
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves1": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
-                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # yes
+                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves2": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
-                    expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # yes
+                    expenvelope.Envelope.from_points((0, 0.1), (1, 0.1)),
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
@@ -355,27 +355,27 @@ STATES = (
             "shall_play_octaves0": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
+                    expenvelope.Envelope.from_points((0, 0.8), (1, 0.8)),
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
-                    # filtered noise
-                    expenvelope.Envelope.from_points((0, 0.2), (1, 0.2)),
                 ),
             ),
             "shall_play_octaves1": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
-                    expenvelope.Envelope.from_points((0, 1), (1, 1)),
-                    # filtered noise
+                    # yes
+                    expenvelope.Envelope.from_points((0, 0.7), (1, 0.7)),
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves2": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
-                    expenvelope.Envelope.from_points((0, 0.5), (1, 0.5)),
-                    # filtered noise
+                    # yes
+                    expenvelope.Envelope.from_points((0, 0.8), (1, 0.8)),
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
@@ -564,27 +564,27 @@ STATES = (
             "shall_play_octaves0": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
                     expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves1": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
                     expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves2": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
                     expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
@@ -772,27 +772,27 @@ STATES = (
             "shall_play_octaves0": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
                     expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves1": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
                     expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
             "shall_play_octaves2": classes.DynamicChoice(
                 (True, False),
                 (
-                    # sine
+                    # yes
                     expenvelope.Envelope.from_points((0, 0), (1, 0)),
-                    # filtered noise
+                    # no
                     expenvelope.Envelope.from_points((0, 1), (1, 1)),
                 ),
             ),
@@ -1030,7 +1030,7 @@ STATES = (
             "density_singer2": expenvelope.Envelope.from_points((0, 0.08), (1, 0.08)),
             "bandwidth_singer0": expenvelope.Envelope.from_points((0, 3), (1, 3)),
             "bandwidth_singer1": expenvelope.Envelope.from_points((0, 3), (1, 3)),
-            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 5), (1, 5)),
+            "bandwidth_singer2": expenvelope.Envelope.from_points((0, 5), (1, 2)),
             "volume_range_singer0": classes.Tendency(
                 expenvelope.Envelope.from_points((0, 0.05), (1, 0.05)),
                 expenvelope.Envelope.from_points((0, 0.2), (1, 0.3)),

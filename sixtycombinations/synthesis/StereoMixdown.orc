@@ -1,6 +1,6 @@
 ; simple csound sampler for stereo mixdown
 
-sr     = 96000
+sr     = 48000
 ksmps  = 1
 0dbfs  = 1
 nchnls = 2

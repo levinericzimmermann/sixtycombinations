@@ -149,9 +149,8 @@ class GroupsToReaperMarkerFileConverter(converters.abc.Converter):
 
 
 class AnnotatedNoteLikesToSoundFileConvert(converters.abc.Converter):
-    def __init__(self, nth_cycle: int):
+    def __init__(self, nth_cycle: int, path: str):
         self.nth_cycle = nth_cycle
-        path = "{}/{}".format(constants.ISIS_FILES_BUILD_PATH, nth_cycle)
         isis_score_converter = converters.frontends.isis.IsisScoreConverter(
             "{}.isis".format(path),
             simple_event_to_pitch=lambda note_like: note_like.pitch_or_pitches[0],
@@ -193,6 +192,171 @@ class AnnotatedNoteLikesToSoundFileConvert(converters.abc.Converter):
         self, annotated_note_likes: basic.SequentialEvent[classes.AnnotatedNoteLike]
     ) -> None:
         self._isis_converter.convert(self._tie_rests(annotated_note_likes))
+
+
+class LongAnnotatedNoteLikesToSoundFileConverter(converters.abc.Converter):
+    def __init__(self, nth_cycle: int, split_time: float = 15 * 60):
+        self.split_time = split_time
+        self.nth_cycle = nth_cycle
+        self.path = "{}/{}".format(constants.ISIS_FILES_BUILD_PATH, nth_cycle)
+        self.csound_score_converter = converters.frontends.csound.CsoundScoreConverter(
+            "{}.sco".format(self.path),
+            p4=lambda event: 0,  # skiptime
+            p5=lambda event: event.path,
+        )
+        self.converter = converters.frontends.csound.CsoundConverter(
+            "{}.wav".format(self.path),
+            "sixtycombinations/synthesis/Remix.orc",
+            self.csound_score_converter,
+            converters.frontends.csound_constants.SILENT_FLAG,
+            converters.frontends.csound_constants.FORMAT_64BIT,
+        )
+
+    @staticmethod
+    def _find_closest_rest(
+        absolute_time: float,
+        annotated_note_likes: basic.SequentialEvent[
+            typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+        ],
+        absolute_times: typing.Tuple[float],
+    ) -> int:
+        sorted_absolute_times = sorted(
+            absolute_times, key=lambda at: abs(absolute_time - at)
+        )
+        for at in sorted_absolute_times:
+            nth_item = absolute_times.index(at)
+            if type(annotated_note_likes[nth_item]) == basic.SimpleEvent:
+                return nth_item
+
+        raise NotImplementedError()
+
+    def _make_segment(
+        self,
+        annotated_note_likes: basic.SequentialEvent[
+            typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+        ],
+        absolute_times: typing.Tuple[float],
+        start: int,
+        end: int,
+        nth_segment: int,
+    ) -> typing.Tuple[
+        basic.SequentialEvent[
+            typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+        ],
+        float,  # start
+        str,  # path
+    ]:
+
+        segment = (
+            annotated_note_likes[start:end],
+            absolute_times[start],
+            "{}_{}".format(self.path, nth_segment),
+        )
+        return segment
+
+    def _split_annotated_note_likes(
+        self,
+        annotated_note_likes: basic.SequentialEvent[
+            typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+        ],
+    ) -> typing.Tuple[
+        typing.Tuple[
+            basic.SequentialEvent[
+                typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+            ],
+            float,  # start
+            str,  # path
+        ]
+    ]:
+        segments = []
+
+        last_rest = 0
+        absolute_times = annotated_note_likes.absolute_times
+        for nth_segment, segment_position in enumerate(
+            range(
+                int(self.split_time),
+                int(annotated_note_likes.duration),
+                int(self.split_time),
+            )
+        ):
+            split_item = self._find_closest_rest(
+                segment_position, annotated_note_likes, absolute_times
+            )
+            segment = self._make_segment(
+                annotated_note_likes, absolute_times, last_rest, split_item, nth_segment
+            )
+            segments.append(segment)
+            last_rest = split_item
+
+        if last_rest < len(annotated_note_likes):
+            segment = self._make_segment(
+                annotated_note_likes,
+                absolute_times,
+                last_rest,
+                len(annotated_note_likes),
+                nth_segment + 1,
+            )
+            segments.append(segment)
+
+        return tuple(segments)
+
+    def _render_split_annotated_note_likes(
+        self,
+        split_annotated_note_likes: typing.Tuple[
+            typing.Tuple[
+                basic.SequentialEvent[
+                    typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+                ],
+                float,  # start
+                str,  # path
+            ]
+        ],
+    ) -> None:
+        for annotated_note_likes, _, path in split_annotated_note_likes:
+            converter = AnnotatedNoteLikesToSoundFileConvert(self.nth_cycle, path)
+            converter.convert(annotated_note_likes)
+
+    @staticmethod
+    def _make_remix_events(
+        split_annotated_note_likes: typing.Tuple[
+            typing.Tuple[
+                basic.SequentialEvent[
+                    typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+                ],
+                float,  # start
+                str,  # path
+            ]
+        ],
+    ) -> basic.SimultaneousEvent[basic.SequentialEvent[basic.SimpleEvent]]:
+        remix_events = basic.SimultaneousEvent([])
+        for annotated_note_likes, start, path in split_annotated_note_likes:
+            sequential_event = basic.SequentialEvent([])
+            if start > 0:
+                rest_before_remix_event = basic.SimpleEvent(start)
+                sequential_event.append(rest_before_remix_event)
+            remix_event = basic.SimpleEvent(annotated_note_likes.duration)
+            remix_event.path = "{}.wav".format(path)
+            sequential_event.append(remix_event)
+            remix_events.append(sequential_event)
+
+        return remix_events
+
+    def convert(
+        self,
+        annotated_note_likes: basic.SequentialEvent[
+            typing.Union[basic.SimpleEvent, classes.AnnotatedNoteLike]
+        ],
+    ) -> None:
+        split_annotated_note_likes = self._split_annotated_note_likes(
+            annotated_note_likes
+        )
+        remix_events = LongAnnotatedNoteLikesToSoundFileConverter._make_remix_events(
+            split_annotated_note_likes
+        )
+        self._render_split_annotated_note_likes(split_annotated_note_likes)
+
+        self.converter.convert(remix_events)
+        os.remove(self.csound_score_converter.path)
 
 
 class VibrationsToFilteredIsisSoundFileConverter(converters.abc.Converter):

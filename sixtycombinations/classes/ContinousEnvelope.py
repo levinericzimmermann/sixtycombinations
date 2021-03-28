@@ -219,6 +219,22 @@ class ContinousEnvelope(object):
         )
         return responsible_segment.periodic_function(position_for_periodic_function)
 
+    def get_n_points(self, n_points: int) -> typing.Tuple[typing.Tuple[float, float]]:
+        points = []
+        stepsize = self.segments.duration / n_points
+        for start, segment in zip(self.segments.absolute_times, self.segments):
+            segment_duration = segment.duration
+            n_points_in_current_segment = int(segment_duration // stepsize)
+            segment_start = start + self.domain_start
+            for nth_point in range(n_points_in_current_segment):
+                x = nth_point / n_points_in_current_segment
+                time = segment_start + (segment_duration * x)
+                value = segment.periodic_function(x)
+                points.append((time, value))
+
+        points.append((self.domain_end, self.segments[-1].periodic_function(1)))
+        return tuple(points)
+
     @decorators.add_return_option
     def scale(
         self, new_domain_start: float, new_domain_end: float
@@ -226,19 +242,5 @@ class ContinousEnvelope(object):
         self._segments.duration = new_domain_end - new_domain_start
         self._domain_start, self._domain_end = new_domain_start, new_domain_end
 
-    def to_discrete_envelope(
-        self,
-        domain_start: float = 0,
-        domain_end: float = 1,
-        resolution_multiple: int = 2,
-        key_point_precision: int = 2000,
-        key_point_iterations: int = 5,
-    ) -> expenvelope.Envelope:
-        return expenvelope.Envelope.from_function(
-            self.function,
-            domain_start=domain_start,
-            domain_end=domain_end,
-            resolution_multiple=resolution_multiple,
-            key_point_precision=key_point_precision,
-            key_point_iterations=key_point_iterations,
-        )
+    def to_discrete_envelope(self, n_points: int = 50000) -> expenvelope.Envelope:
+        return expenvelope.Envelope.from_points(*self.get_n_points(n_points))

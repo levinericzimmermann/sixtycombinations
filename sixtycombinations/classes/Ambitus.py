@@ -74,9 +74,6 @@ class Ambitus(object):
     #                       public methods                     #
     # ######################################################## #
 
-    # def find_best_voice_leading(self, pitches: tuple) -> tuple:
-    #     return ji.find_best_voice_leading(pitches, self.__borders)
-
     def find_all_pitch_variants(
         self, pitch: parameters.abc.Pitch, period: typing.Any = None
     ) -> typing.Tuple[parameters.abc.Pitch]:

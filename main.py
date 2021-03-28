@@ -5,8 +5,7 @@ import operator
 import os
 import threading
 import time
-import typing
-
+import typing 
 import sox
 
 from mutwo import converters
@@ -114,7 +113,7 @@ def _render_rhythmical_grids_to_sound_files(
         symmetrical_converter = sixtycombinations.converters.symmetrical.RhythmicalGridToAnnotatedNoteLikesConverter(
             nth_cycle
         )
-        frontend_converter = sixtycombinations.converters.frontends.AnnotatedNoteLikesToSoundFileConvert(
+        frontend_converter = sixtycombinations.converters.frontends.LongAnnotatedNoteLikesToSoundFileConverter(
             nth_cycle
         )
         frontend_converter.convert(symmetrical_converter.convert(rhythmical_grid))
@@ -187,7 +186,9 @@ def _render_singing_phrases_dummies():
         adjusted_phrase = phrase.copy()
         for event in adjusted_phrase:
             if event.pitch is not None:
-                event.pitch = pitches.DirectPitch(float(pitches.DirectPitch.cents_to_ratio(event.pitch) * 320))
+                event.pitch = pitches.DirectPitch(
+                    float(pitches.DirectPitch.cents_to_ratio(event.pitch) * 320)
+                )
             else:
                 event.pitch = pitches.WesternPitch("c", -1, concert_pitch=440)
 
@@ -264,28 +265,26 @@ if __name__ == "__main__":
     # make reaper marker files for better structure in reaper project:
     # _convert_groups_to_reaper_marker_file()
 
-    # raise ValueError
-
     nested_note_likes = _convert_partials_to_note_likes()
     _render_note_likes_to_midi_files(nested_note_likes)
 
-    print("midi - done")
+    # print("midi - done")
 
-    # _render_rhythmical_grids_to_sound_files(
-    #     sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
-    # )
+    _render_rhythmical_grids_to_sound_files(
+        sixtycombinations.constants.ISIS_RHYTHMICAL_GRID_PER_CYCLE
+    )
 
     # convert partials to vibrations
     nested_vibrations = _convert_partials_to_vibrations(apply_frequency_response=False)
     _render_vibrations_to_filtered_isis_files(nested_vibrations)
 
     # logging etc.
-    # nested_vibrations.cut_out(0, 122)
+    # nested_vibrations.cut_out(0, 152)
     # print(nested_vibrations.duration)
-    # _print_density_per_speaker(nested_vibrations)
+    _print_density_per_speaker(nested_vibrations)
 
     # render vibrations to sound files
-    # _render_vibrations_to_sound_files(nested_vibrations)
+    _render_vibrations_to_sound_files(nested_vibrations)
 
     # mix sound files together to one single wav file
     # _mix_sound_files(2)

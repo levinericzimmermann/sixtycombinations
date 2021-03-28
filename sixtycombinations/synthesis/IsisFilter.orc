@@ -1,7 +1,7 @@
 ; filter singing synthesis files by sine tone data
 
 ; setting general details
-sr     = 96000
+sr     = 48000
 ksmps  = 1
 0dbfs  = 1
 nchnls = 1 

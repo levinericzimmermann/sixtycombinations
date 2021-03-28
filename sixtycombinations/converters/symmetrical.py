@@ -56,7 +56,11 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             sc_constants.WEATHER.rests.absolute_times, sc_constants.WEATHER.rests
         ):
             if rest.is_rest:
-                nested_vibrations.squash_in(absolute_time, rest)
+                [
+                    vib.squash_in(absolute_time, rest)
+                    for vib in nested_vibrations
+                    if vib.duration >= absolute_time
+                ]
 
     @staticmethod
     def _cut_vibrations(
@@ -606,12 +610,7 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
         dynamic_curve: int,
     ) -> basic.SequentialEvent[basic.SimpleEvent]:
 
-        (
-            n_repetitions,
-            _,
-            rhythm_cycle,
-            indispensability_per_beat,
-        ) = rhythmical_data
+        (n_repetitions, _, rhythm_cycle, indispensability_per_beat,) = rhythmical_data
 
         period_duration = partial.period_duration
 
@@ -875,11 +874,11 @@ class PartialsToVibrationsConverter(converters.abc.Converter):
             nth_cycle, new_sequential_event
         )
 
-        # PartialsToVibrationsConverter._add_rests(cut_out_event)
-        # [
-        #     PartialsToVibrationsConverter._remove_too_short_vibrations(vibrations)
-        #     for vibrations in cut_out_event
-        # ]
+        PartialsToVibrationsConverter._add_rests(cut_out_event)
+        [
+            PartialsToVibrationsConverter._remove_too_short_vibrations(vibrations)
+            for vibrations in cut_out_event
+        ]
 
         return cut_out_event
 
@@ -917,7 +916,8 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
     #                complex conversion methods                #
     # ######################################################## #
 
-    def _divide_state_in_periods(self, n_repetitions: int) -> typing.Tuple[int]:
+    @staticmethod
+    def _divide_state_in_periods(n_repetitions: int) -> typing.Tuple[int]:
         average_period_size = 6
         return toussaint.euclidean(
             n_repetitions, math.ceil(n_repetitions / average_period_size)
@@ -953,6 +953,23 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
                 {period_size: itertools.cycle(metricities)}
             )
             return self._find_metricity_per_beat_for_period_size(period_size)
+
+    @staticmethod
+    def _add_rests_to_sequential_event(
+        density: float, sequential_event: basic.SequentialEvent[music.NoteLike]
+    ) -> None:
+        for event_start, event in zip(
+            reversed(sequential_event.absolute_times), reversed(sequential_event)
+        ):
+            n_beats = event.duration
+            n_beats_rest = sum(
+                1 for _ in range(n_beats - 1) if random.random() >= density
+            )
+            if n_beats_rest > 0:
+                sequential_event.squash_in(
+                    event_start + (n_beats - n_beats_rest),
+                    basic.SimpleEvent(n_beats_rest),
+                )
 
     def _generate_events_with_octave_shifted_partner(
         self,
@@ -1006,7 +1023,7 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
             sequential_event = basic.SequentialEvent([])
             is_first = True
             for start, end in zip(rhythm, rhythm[1:] + (period_size * 2,)):
-                duration = (end - start) * duration_per_beat
+                duration = end - start
                 if is_first and start_with_rest:
                     leaf = basic.SimpleEvent(duration)
                     is_first = False
@@ -1014,6 +1031,13 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
                     leaf = music.NoteLike(pitch, duration, metricity_per_beat[start])
 
                 sequential_event.append(leaf)
+
+            PartialsToNoteLikesConverter._add_rests_to_sequential_event(
+                density, sequential_event
+            )
+            sequential_event.set_parameter(
+                "duration", lambda duration: duration * duration_per_beat
+            )
 
             events.append(sequential_event)
 
@@ -1042,14 +1066,19 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
             sequential_event = basic.SequentialEvent(
                 [
                     music.NoteLike(
-                        partial.pitch,
-                        duration_per_beat * duration_of_rhythm,
-                        metricity_per_beat[nth_beat],
+                        partial.pitch, duration_of_rhythm, metricity_per_beat[nth_beat],
                     )
                     for duration_of_rhythm, nth_beat in zip(
                         rhythm, tools.accumulate_from_zero(rhythm)
                     )
                 ]
+            )
+
+            PartialsToNoteLikesConverter._add_rests_to_sequential_event(
+                density, sequential_event
+            )
+            sequential_event.set_parameter(
+                "duration", lambda duration: duration * duration_per_beat
             )
 
         else:
@@ -1077,18 +1106,12 @@ class PartialsToNoteLikesConverter(PartialsToVibrationsConverter):
 
         if shall_play_octaves:
             events = self._generate_events_with_octave_shifted_partner(
-                partial,
-                period_size,
-                duration_per_beat,
-                density,
+                partial, period_size, duration_per_beat, density,
             )
 
         else:
             events = self._generate_events_without_octave_shifted_partner(
-                partial,
-                period_size,
-                duration_per_beat,
-                density,
+                partial, period_size, duration_per_beat, density,
             )
 
         return events

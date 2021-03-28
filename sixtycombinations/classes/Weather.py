@@ -3,10 +3,13 @@ import operator
 import typing
 
 import expenvelope
+from mu.utils import infit
 from mutwo.events import basic
+from mutwo.utilities import tools
 import yamm
 
 from sixtycombinations.classes import DynamicChoice
+from sixtycombinations.classes import Lookup
 from sixtycombinations.classes import State
 from sixtycombinations.classes import Tendency
 
@@ -17,6 +20,7 @@ class Weather(object):
         start_state: State,
         states: typing.Iterable[State],
         markov_chain: yamm.Chain,
+        lookup: Lookup,
         duration: numbers.Number,
         seed: int = 100,
     ):
@@ -27,28 +31,60 @@ class Weather(object):
 
         self._states = states
         self._state_weight_envelopes = Weather._make_weight_envelope_per_state(
-            start_state, states, markov_chain, duration
+            start_state, states, markov_chain, lookup, duration
         )
 
-        # self._initialise_rests(duration)
+        self._initialise_rests(duration)
 
     # ######################################### #
     #         initialise global rests           #
     # ######################################### #
 
     def _initialise_rests(self, duration: numbers.Number) -> None:
-        rests = basic.SequentialEvent([])
-        rests_duration = 0
-        while rests_duration < duration:
-            absolute_time = rests.duration / duration
-            rest_duration = self.get_value_of_at("rest_duration", absolute_time)
-            event = basic.SimpleEvent(rest_duration)
-            event.is_rest = self.get_value_of_at("activate_rest", absolute_time)
-            rests_duration += rest_duration
-            rests.append(event)
+        test_point_maker = infit.Uniform(7, 12)
+        test_points = []
+        while sum(test_points) < duration:
+            test_points.append(next(test_point_maker))
 
-        difference = rests_duration - duration
-        rests[-1].duration -= difference
+        test_points[-1] -= sum(test_points) - duration
+
+        rests = basic.SequentialEvent([])
+        for absolute_time, test_point_duration in zip(
+            tools.accumulate_from_zero(test_points), test_points
+        ):
+            absolute_position_on_timeline = absolute_time / duration
+            activate_rest = self.get_value_of_at(
+                "activate_rest", absolute_position_on_timeline
+            )
+            if activate_rest:
+                rest_duration = self.get_value_of_at(
+                    "rest_duration", absolute_position_on_timeline
+                )
+                if rest_duration > test_point_duration:
+                    rest_duration = test_point_duration
+                rest = basic.SimpleEvent(rest_duration)
+                rest.is_rest = True
+                rests.append(rest)
+            else:
+                rest_duration = 0
+
+            remaining_playing = test_point_duration - rest_duration
+            if remaining_playing:
+                playing = basic.SimpleEvent(remaining_playing)
+                playing.is_rest = False
+            rests.append(playing)
+
+        # rests_duration = 0
+        # while rests_duration < duration:
+        #     absolute_time = rests.duration / duration
+        #     rest_duration = self.get_value_of_at("rest_duration", absolute_time)
+        #     event = basic.SimpleEvent(rest_duration)
+        #     event.is_rest = self.get_value_of_at("activate_rest", absolute_time)
+        #     rests_duration += rest_duration
+        #     rests.append(event)
+
+        # difference = rests_duration - duration
+        # rests[-1].duration -= difference
         self._rests = rests
 
     @property
@@ -144,6 +180,7 @@ class Weather(object):
         start_state: State,
         states: typing.Iterable[State],
         markov_chain: yamm.Chain,
+        lookup: Lookup,
         duration: numbers.Number,
     ) -> typing.Tuple[typing.Tuple[float]]:
         generator = markov_chain.walk_deterministic((start_state,))
@@ -155,8 +192,10 @@ class Weather(object):
 
         active_states = []
         while summed_duration < duration:
-            current_state = states[state_names.index(next(generator))]
-            print(current_state.name)
+            next_state_name = next(generator)
+            actual_state = lookup(next_state_name)
+            current_state = states[state_names.index(actual_state)]
+            print(round(summed_duration, 3), current_state.name)
             sustain = current_state.duration_maker()
             if last_state is None:
                 relative_attack = None
@@ -193,10 +232,11 @@ class Weather(object):
         start_state: State,
         states: typing.Iterable[State],
         markov_chain: yamm.Chain,
+        lookup: Lookup,
         duration: numbers.Number,
     ) -> typing.Tuple[expenvelope.Envelope]:
         distributed_states_data = Weather._distribute_states_on_duration(
-            start_state, states, markov_chain, duration
+            start_state, states, markov_chain, lookup, duration
         )
         return Weather._convert_distributed_states_to_envelopes(
             states, distributed_states_data, duration
@@ -211,7 +251,7 @@ class Weather(object):
         absolute_time: numbers.Number,
         dynamic_choices_and_weights: typing.Tuple[typing.Tuple[DynamicChoice, float]],
     ):
-        dynamic_choices, weights = (
+        _, weights = (
             map(lambda n: n[i], dynamic_choices_and_weights) for i in range(2)
         )
         summed_weights = sum(weights)
